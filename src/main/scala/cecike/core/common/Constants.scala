@@ -1,4 +1,4 @@
-package cecike.core
+package cecike.core.common
 
 import chisel3.util._
 
