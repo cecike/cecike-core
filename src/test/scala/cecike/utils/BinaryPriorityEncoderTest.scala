@@ -25,10 +25,6 @@ class BinaryPriorityEncoderModule extends Module {
 class BinaryPriorityEncoderTest(c: BinaryPriorityEncoderModule) extends PeekPokeTester(c) {
   for(i <- 1 until 1024) {
     poke(c.io.in, i)
-    println("+++")
-    println(i.toString)
-    println(peek(c.io.lib).toString(10))
-    println(peek(c.io.o.bits).toString(10))
     expect(c.io.ok, true)
     step(1)
   }
