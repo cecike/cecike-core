@@ -49,10 +49,10 @@ class FreeList extends Module {
 
   val allocateMask = Mux(io.allocateResp.valid,
     (allocateResp zip io.allocateReq)
-      .map(p => Mux(p._2, (1.U(physicalRegisterNum.W) << p._1.bits).asUInt, 0.U))
+      .map(p => Mux(p._2, UIntToOH(p._1.bits, physicalRegisterNum), 0.U))
       .reduce(_|_), 0.U)
   val deallocateMask = io.deallocateReq
-    .map(p => Mux(p.valid, (1.U(physicalRegisterNum.W) << p.bits).asUInt, 0.U))
+    .map(p => Mux(p.valid, UIntToOH(p.bits, physicalRegisterNum), 0.U))
     .reduce(_|_) & (~1.U(physicalRegisterNum.W)).asUInt
 
   val nextFreeList = (freeList & (~allocateMask).asUInt) | deallocateMask

@@ -24,11 +24,11 @@ class BusyTable extends Module {
   val busyTable = RegInit(0.U(physicalRegisterNum.W))
 
   val rdWriteMask = io.rdWritePort
-    .map(p => Mux(p.valid, (1.U(physicalRegisterNum.W) << p.bits).asUInt, 0.U))
+    .map(p => Mux(p.valid, UIntToOH(p.bits, physicalRegisterNum), 0.U))
     .reduce(_|_)
 
   val backendWriteMask = (~io.backendWritePort
-    .map(p => Mux(p.valid, (1.U(physicalRegisterNum.W) << p.bits).asUInt, 0.U))
+    .map(p => Mux(p.valid, UIntToOH(p.bits, physicalRegisterNum), 0.U))
     .reduce(_|_)).asUInt
   val commonMask = (~(1.U(physicalRegisterNum.W))).asUInt
 
