@@ -5,7 +5,10 @@ import chisel3.util._
 object Constants {
   val xLen = 64 // From RISC-V Spec
 
+  val logicalRegisterNum = 32
   val physicalRegisterNum = 128
+
+  val logicalRegisterAddressWidth = log2Ceil(logicalRegisterNum)
   val physicalRegisterAddressWidth = log2Ceil(physicalRegisterNum)
 
   val decodeWidth = 4
