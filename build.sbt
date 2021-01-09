@@ -6,7 +6,7 @@ def scalacOptionsVersion(scalaVersion: String): Seq[String] = {
     //  switch to support our anonymous Bundle definitions:
     //  https://github.com/scala/bug/issues/10047
     CrossVersion.partialVersion(scalaVersion) match {
-      case Some((2, scalaMajor: Long)) if scalaMajor < 12 => Seq()
+      case Some((2, scalaMajor: Long)) if scalaMajor < 12 => Seq("-language:reflectiveCalls")
       case _ => Seq("-Xsource:2.11")
     }
   }
