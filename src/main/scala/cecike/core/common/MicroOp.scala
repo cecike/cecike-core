@@ -18,8 +18,7 @@ class MicroOp extends Bundle {
   def opcode(): UInt = instruction(6, 0)
   def funct3(): UInt = instruction(14, 12)
   def funct7(): UInt = instruction(31, 25)
-
-  // TODO: Generate these signals in rename stage
+  
   val orderInfo = new OrderInfo
 
   val physicalRs1 = UInt(physicalRegisterAddressWidth.W)
