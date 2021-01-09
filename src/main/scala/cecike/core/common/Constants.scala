@@ -5,6 +5,8 @@ import chisel3.util._
 object Constants {
   val xLen = 64 // From RISC-V Spec
 
+  val instructionLen = 32
+
   val logicalRegisterNum = 32
   val physicalRegisterNum = 128
 

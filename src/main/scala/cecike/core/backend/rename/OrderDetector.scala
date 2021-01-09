@@ -3,18 +3,8 @@ package cecike.core.backend.rename
 import chisel3._
 import chisel3.util._
 import cecike.core.common.Constants._
+import cecike.core.common.OrderInfo
 import cecike.utils._
-
-class OrderInfo extends Bundle {
-  val rs1Info = Valid(UInt(log2Ceil(decodeWidth).W))
-  val rs2Info = Valid(UInt(log2Ceil(decodeWidth).W))
-  val rdInfo = UInt(decodeWidth.W)
-
-  def validWithMask(mask: UInt, selfIndex: Int, end: Int = decodeWidth - 1): Bool = {
-    val temp = (mask(end, 0)).asUInt & (~((1.U(decodeWidth.W) << selfIndex.U))).asUInt
-    !(rdInfo & temp(decodeWidth - 1, 0)).orR()
-  }
-}
 
 class OrderDetectorIO extends Bundle {
   val rs1 = Input(Vec(decodeWidth, UInt(logicalRegisterAddressWidth.W)))
