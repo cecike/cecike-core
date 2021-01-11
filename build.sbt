@@ -32,8 +32,6 @@ version := "0.1.0"
 
 scalaVersion := "2.12.10"
 
-crossScalaVersions := Seq("2.12.10", "2.11.12")
-
 resolvers ++= Seq(
   Resolver.sonatypeRepo("snapshots"),
   Resolver.sonatypeRepo("releases")
