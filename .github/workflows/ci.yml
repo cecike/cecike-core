@@ -16,3 +16,5 @@ jobs:
       run: sudo apt-get -y install build-essential verilator
     - name: Build and Test
       run: sbt -v -Dfile.encoding=UTF-8 +test
+    - name: Switch to Small Cecike and Test Again
+      run: sed -i 's/false/true/g' "src/main/scala/cecike/core/common/Constants.scala" && sbt -v -Dfile.encoding=UTF-8 +test

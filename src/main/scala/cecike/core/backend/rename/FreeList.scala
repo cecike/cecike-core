@@ -37,8 +37,10 @@ class FreeList extends Module {
   }
   connectAllocateResp(allocateRespLo, 0, false)
   connectAllocateResp(allocateRespHi, 1, true)
-  connectAllocateResp(allocateRespLoRev, 2, false, !allocateRespLoEq)
-  connectAllocateResp(allocateRespHiRev, 3, true, !allocateRespHiEq)
+  if (!useSmallCecike) {
+    connectAllocateResp(allocateRespLoRev, 2, false, !allocateRespLoEq)
+    connectAllocateResp(allocateRespHiRev, 3, true, !allocateRespHiEq)
+  }
 
   for (i <- 0 until decodeWidth) {
     io.allocateResp.bits(i) := allocateResp(i).bits
