@@ -3,8 +3,23 @@ package cecike.core.common
 import chisel3._
 import cecike.core.common.Constants._
 
+class BranchPredictionResult extends Bundle {
+  val taken = Bool()
+  val dest = UInt(xLen.W)
+}
+
 class MicroOp extends Bundle {
+  val valid = Bool()
+  val pc = UInt(xLen.W)
   val instruction = UInt(instructionLen.W)
+
+  // TODO: Detailed design in branch prediction
+  val branchTag = UInt(branchTagWidth.W)
+  val branchPredictionResult = new BranchPredictionResult
+
+  // TODO: Generate these signals in decode stage
+  val fuType = UInt(FunctionUnitType.fuTypeWidth.W)
+  val fuOp = UInt(functionUnitOpWidth.W)
 
   // TODO: Generate these signals in decode stage
   // NOTE: register 0 is considered invalid here
@@ -12,9 +27,11 @@ class MicroOp extends Bundle {
   val rs2Valid = Bool()
   val rdValid = Bool()
 
-  def rs1(): UInt = Mux(rs1Valid, instruction(19, 15), 0.U)
-  def rs2(): UInt = Mux(rs2Valid, instruction(24, 20), 0.U)
-  def rd(): UInt = Mux(rdValid, instruction(11, 7), 0.U)
+  val immediate = UInt(xLen.W)
+
+  def rs1(): UInt = Mux(valid && rs1Valid, instruction(19, 15), 0.U)
+  def rs2(): UInt = Mux(valid && rs2Valid, instruction(24, 20), 0.U)
+  def rd(): UInt = Mux(valid && rdValid, instruction(11, 7), 0.U)
   def opcode(): UInt = instruction(6, 0)
   def funct3(): UInt = instruction(14, 12)
   def funct7(): UInt = instruction(31, 25)
@@ -32,7 +49,18 @@ class MicroOp extends Bundle {
 object MicroOp {
   def apply() = {
     val microOp = Wire(new MicroOp)
+    microOp.valid := false.B
+    microOp.pc := 0.U
     microOp.instruction := 0.U
+
+    microOp.branchTag := 0.U
+    microOp.branchPredictionResult.taken := false.B
+    microOp.branchPredictionResult.dest := 0.U
+
+    microOp.fuType := FunctionUnitType.FU_ALU
+    microOp.fuOp := 0.U
+
+    microOp.immediate := 0.U
     microOp.rs1Valid := false.B
     microOp.rs2Valid := false.B
     microOp.rdValid := false.B

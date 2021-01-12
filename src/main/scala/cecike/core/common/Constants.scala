@@ -40,6 +40,8 @@ object Constants {
     val FU_LSU = (1 << 3).U(fuTypeWidth.W)
   }
 
+  def functionUnitOpWidth = List(ALUOp.aluOpWidth, BRUOp.bruOpWidth).max
+
   object ALUOp {
     val aluOpWidth = 4
 
