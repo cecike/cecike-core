@@ -58,4 +58,21 @@ object Constants {
       data.U(aluOpWidth.W)
     }
   }
+
+  object BRUOp {
+    val bruOpWidth = 3
+
+    val X = op(0)
+    val J = op(1)
+    val EQ = op(2)
+    val NE = op(3)
+    val LT = op(4)
+    val GE = op(5)
+    val LTU = op(6)
+    val GEU = op(7)
+
+    def op(data: Int) = {
+      data.U(bruOpWidth.W)
+    }
+  }
 }
