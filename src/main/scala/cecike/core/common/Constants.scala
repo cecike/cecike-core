@@ -12,16 +12,24 @@ object Constants {
   val instructionLen = 32
 
   val logicalRegisterNum = 32
-  val physicalRegisterNum = if (useSmallCecike) 64 else 128
+  val physicalRegisterNum = withSmallOption(128, 64)
 
   val logicalRegisterAddressWidth = log2Ceil(logicalRegisterNum)
   val physicalRegisterAddressWidth = log2Ceil(physicalRegisterNum)
 
-  val decodeWidth = if (useSmallCecike) 2 else 4
-  val issueWidth = if (useSmallCecike) 3 else 6
+  val decodeWidth = withSmallOption(4, 2)
+  val issueWidth = withSmallOption(6, 3)
 
   val branchSnapshotCount = 8
   val branchTagWidth = log2Ceil(branchSnapshotCount)
+
+  def withSmallOption[T](data: T, opt: T) = {
+    if (useSmallCecike) {
+      opt
+    } else {
+      data
+    }
+  }
 
   object FunctionUnitType {
     val fuTypeWidth = 4
