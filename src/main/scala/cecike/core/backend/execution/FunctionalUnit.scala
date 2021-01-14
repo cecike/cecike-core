@@ -14,6 +14,7 @@ class FunctionalUnitIO(val hasBRU: Boolean) extends Bundle {
   val rsRead = Vec(2, Flipped(new RegisterFileReadPort))
 
   val fuType = Output(UInt(FunctionUnitType.fuTypeWidth.W))
+  val readyROB = Valid(UInt(robAddressWidth.W))
   val readyRd = Valid(UInt(physicalRegisterAddressWidth.W))
   val rdWrite = Flipped(new RegisterFileWritePort)
   val branchInfo = if (hasBRU) Output(new BranchInfo) else null
@@ -65,6 +66,8 @@ class FunctionalUnit(hasALU: Boolean, hasBRU: Boolean) extends Module {
   io.rdWrite.data := Mux(hasBRU.B && bru.io.result.valid, bru.io.result.bits, aluResult)
   io.rdWrite.addr := stage2MicroOp.bits.rdInfo.bits
   // TODO: For now all FU is bypassed, modify here in the future
+  io.readyROB.valid := stage2MicroOp.valid
+  io.readyROB.bits := stage2MicroOp.bits.robIndex
   io.readyRd.valid := io.microOpIn.valid && io.microOpIn.bits.rdInfo.valid
   io.readyRd.bits := io.microOpIn.bits.rdInfo.bits
 }

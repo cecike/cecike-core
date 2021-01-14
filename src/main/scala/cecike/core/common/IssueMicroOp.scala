@@ -25,24 +25,35 @@ class IssueMicroOp extends Bundle {
   val immediate = UInt(xLen.W)
 
   val rdInfo = UndirectionedValid(UInt(physicalRegisterAddressWidth.W))
+
+  val robIndex = UInt(robAddressWidth.W)
 }
 
 object IssueMicroOp {
   def apply(microOpIn: MicroOp) = {
     val microOp = Wire(new IssueMicroOp)
     microOp.pc := microOpIn.pc
+
     microOp.branchTag := microOpIn.branchTag
     microOp.branchPredictionInfo := microOpIn.branchPredictionInfo
+
     microOp.instType := microOpIn.instType
     microOp.fuType := microOpIn.fuType
     microOp.fuOp := microOpIn.fuOp
+
     microOp.rs1Info.addr := microOpIn.physicalRs1
     microOp.rs1Info.busy := microOpIn.physicalRs1Busy
+
     microOp.rs2Info.addr := microOpIn.physicalRs2
     microOp.rs2Info.busy := microOpIn.physicalRs2Busy
+
     microOp.immediate := microOpIn.immediate
+
     microOp.rdInfo.bits := microOpIn.physicalRd
     microOp.rdInfo.valid := microOpIn.physicalRd.orR
+
+    microOp.robIndex := microOpIn.robIndex
+
     microOp
   }
 }

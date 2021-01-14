@@ -40,6 +40,8 @@ class MicroOp extends Bundle {
   val physicalRs2Busy = Bool()
   val physicalRd = UInt(physicalRegisterAddressWidth.W)
   val oldPhysicalRd = UInt(physicalRegisterAddressWidth.W)
+
+  val robIndex = UInt(robAddressWidth.W)
 }
 
 object MicroOp {
@@ -66,6 +68,8 @@ object MicroOp {
     microOp.physicalRs1Busy := false.B
     microOp.physicalRs2Busy := false.B
     microOp.oldPhysicalRd := 0.U
+
+    microOp.robIndex := 0.U
     microOp
   }
 }
