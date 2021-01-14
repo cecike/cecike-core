@@ -14,7 +14,11 @@ class IssueMicroOp extends Bundle {
   val pc = UInt(xLen.W)
 
   val branchTag = UInt(branchTagWidth.W)
-  val branchPredictionResult = new BranchPredictionResult
+  val branchPredictionInfo = new BranchPredictionInfo
+
+  val instType = UInt(InstructionType.instTypeWidth.W)
+  val fuType = UInt(FunctionUnitType.fuTypeWidth.W)
+  val fuOp = UInt(functionUnitOpWidth.W)
 
   val rs1Info = new SourceRegisterInfo
   val rs2Info = new SourceRegisterInfo
@@ -28,7 +32,10 @@ object IssueMicroOp {
     val microOp = Wire(new IssueMicroOp)
     microOp.pc := microOpIn.pc
     microOp.branchTag := microOpIn.branchTag
-    microOp.branchPredictionResult := microOpIn.branchPredictionResult
+    microOp.branchPredictionInfo := microOpIn.branchPredictionInfo
+    microOp.instType := microOpIn.instType
+    microOp.fuType := microOpIn.fuType
+    microOp.fuOp := microOpIn.fuOp
     microOp.rs1Info.addr := microOpIn.physicalRs1
     microOp.rs1Info.busy := microOpIn.physicalRs1Busy
     microOp.rs2Info.addr := microOpIn.physicalRs2

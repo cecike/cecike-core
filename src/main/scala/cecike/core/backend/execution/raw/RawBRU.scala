@@ -8,6 +8,7 @@ import cecike.utils._
 class RawBRUIO extends Bundle {
   val op = Input(UInt(BRUOp.bruOpWidth.W))
   val pc = Input(UInt(xLen.W))
+  val offset = Input(UInt(xLen.W))
   val src1 = Input(UInt(xLen.W))
   val src2 = Input(UInt(xLen.W))
   val result = Output(Valid(UInt(xLen.W)))
@@ -22,7 +23,7 @@ class RawBRU extends Module {
   val src1 = io.src1
   val src2 = io.src2
 
-  val branchPC = io.pc + src1
+  val branchPC = io.pc + io.offset
   io.resultPC.bits := Mux(op(BRUOp.J), src1, branchPC)
 
   io.result.valid := op(BRUOp.J)

@@ -33,7 +33,7 @@ class RawALU extends Module {
     op(ALUOp.SLL) -> (src1 << src2(5, 0))(xLen - 1, 0).asUInt,
     op(ALUOp.SRL) -> (src1 >> src2(5, 0))(xLen - 1, 0).asUInt,
     op(ALUOp.SRA) -> (src1.asSInt >> src2(5, 0))(xLen - 1, 0).asUInt,
-    op(ALUOp.LUI) -> src1,
+    op(ALUOp.LUI) -> src2,
     op(ALUOp.ADDW) -> SignExtension(src1W + src2W),
     op(ALUOp.SUBW) -> SignExtension(src1W - src2W),
     op(ALUOp.SLLW) -> SignExtension((src1 << src2(4, 0))(wLen - 1, 0)),

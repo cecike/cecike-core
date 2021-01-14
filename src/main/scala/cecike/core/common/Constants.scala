@@ -23,11 +23,35 @@ object Constants {
   val branchSnapshotCount = 8
   val branchTagWidth = log2Ceil(branchSnapshotCount)
 
+  val robBankNum = decodeWidth
+  val robRowNum = 24
+  val robEntryNum = robBankNum * robRowNum
+  val robAddressWidth = log2Ceil(robEntryNum)
+
   def withSmallOption[T](data: T, opt: T) = {
     if (useSmallCecike) {
       opt
     } else {
       data
+    }
+  }
+
+  object InstructionType {
+    val instTypeWidth = 3
+    val X = inst(0)
+    val R = inst(1)
+    val I = inst(2)
+    val S = inst(3)
+    val B = inst(4)
+    val U = inst(5)
+    val J = inst(6)
+
+    def inst(data: Int) = {
+      data.U(instTypeWidth.W)
+    }
+
+    def isRegToRegInstruction(data: UInt) = {
+      data === R || data === S || data === B
     }
   }
 
@@ -38,6 +62,25 @@ object Constants {
     val FU_BRU = (1 << 1).U(fuTypeWidth.W)
     val FU_MDU = (1 << 2).U(fuTypeWidth.W)
     val FU_LSU = (1 << 3).U(fuTypeWidth.W)
+    def fuTypeCode(hasALU: Boolean = false,
+                   hasBRU: Boolean = false,
+                   hasMDU: Boolean = false,
+                   hasLSU: Boolean = false): UInt = {
+      var result = 0.U(fuTypeWidth.W)
+      if (hasALU) {
+        result |= FU_ALU
+      }
+      if (hasBRU) {
+        result |= FU_BRU
+      }
+      if (hasMDU) {
+        result |= FU_MDU
+      }
+      if (hasLSU) {
+        result |= FU_LSU
+      }
+      result
+    }
   }
 
   def functionUnitOpWidth = List(ALUOp.aluOpWidth, BRUOp.bruOpWidth).max

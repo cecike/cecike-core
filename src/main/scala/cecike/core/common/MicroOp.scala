@@ -3,11 +3,6 @@ package cecike.core.common
 import chisel3._
 import cecike.core.common.Constants._
 
-class BranchPredictionResult extends Bundle {
-  val taken = Bool()
-  val dest = UInt(xLen.W)
-}
-
 class MicroOp extends Bundle {
   val valid = Bool()
   val pc = UInt(xLen.W)
@@ -15,9 +10,10 @@ class MicroOp extends Bundle {
 
   // TODO: Detailed design in branch prediction
   val branchTag = UInt(branchTagWidth.W)
-  val branchPredictionResult = new BranchPredictionResult
+  val branchPredictionInfo = new BranchPredictionInfo
 
   // TODO: Generate these signals in decode stage
+  val instType = UInt(InstructionType.instTypeWidth.W)
   val fuType = UInt(FunctionUnitType.fuTypeWidth.W)
   val fuOp = UInt(functionUnitOpWidth.W)
 
@@ -54,12 +50,12 @@ object MicroOp {
     microOp.instruction := 0.U
 
     microOp.branchTag := 0.U
-    microOp.branchPredictionResult.taken := false.B
-    microOp.branchPredictionResult.dest := 0.U
+    microOp.branchPredictionInfo.taken := false.B
+    microOp.branchPredictionInfo.dest := 0.U
 
+    microOp.instType := InstructionType.X
     microOp.fuType := FunctionUnitType.FU_ALU
     microOp.fuOp := 0.U
-
     microOp.immediate := 0.U
     microOp.rs1Valid := false.B
     microOp.rs2Valid := false.B
