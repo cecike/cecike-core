@@ -44,7 +44,7 @@ class RenameStage extends Module {
   val rs1s = io.microOpIn.map(_.rs1())
   val rs2s = io.microOpIn.map(_.rs2())
   val rds = io.microOpIn.map(_.rd())
-  val rdsValid = io.microOpIn.map(_.rdValid && !io.flush)
+  val rdsValid = rds.map(_.orR && !io.flush)
 
   // Connects input signals
   for (i <- 0 until decodeWidth) {
@@ -117,7 +117,7 @@ class RenameStage extends Module {
   val stage2PhysicalRs1 = microOpReg.map(_.physicalRs1)
   val stage2PhysicalRs2 = microOpReg.map(_.physicalRs2)
   val stage2PhysicalRd = microOpReg.map(_.physicalRd)
-  val stage2RdValid = microOpReg.map(_.rdValid)
+  val stage2RdValid = stage2PhysicalRd.map(_.orR)
 
   // Connect to submodules
   for (i <- 0 until decodeWidth) {

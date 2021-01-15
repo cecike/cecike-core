@@ -18,7 +18,6 @@ class MicroOp extends Bundle {
   val fuOp = UInt(functionUnitOpWidth.W)
 
   // TODO: Generate these signals in decode stage
-  // NOTE: register 0 is considered invalid here
   val rs1Valid = Bool()
   val rs2Valid = Bool()
   val rdValid = Bool()
