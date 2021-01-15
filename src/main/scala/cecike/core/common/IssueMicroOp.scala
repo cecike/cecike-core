@@ -24,7 +24,7 @@ class IssueMicroOp extends Bundle {
   val rs2Info = new SourceRegisterInfo
   val immediate = UInt(xLen.W)
 
-  val rdInfo = UndirectionedValid(UInt(physicalRegisterAddressWidth.W))
+  val rdInfo = UndirectionalValid(UInt(physicalRegisterAddressWidth.W))
 
   val robIndex = UInt(robAddressWidth.W)
 }

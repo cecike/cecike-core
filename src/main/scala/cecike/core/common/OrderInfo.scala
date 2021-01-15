@@ -3,11 +3,11 @@ package cecike.core.common
 import chisel3._
 import chisel3.util._
 import cecike.core.common.Constants._
-import cecike.utils.UndirectionedValid
+import cecike.utils.UndirectionalValid
 
 class OrderInfo extends Bundle {
-  val rs1Info = UndirectionedValid(UInt(log2Ceil(decodeWidth).W))
-  val rs2Info = UndirectionedValid(UInt(log2Ceil(decodeWidth).W))
+  val rs1Info = UndirectionalValid(UInt(log2Ceil(decodeWidth).W))
+  val rs2Info = UndirectionalValid(UInt(log2Ceil(decodeWidth).W))
   val rdInfo = UInt(decodeWidth.W)
 
   def validWithMask(mask: UInt, selfIndex: Int, end: Int = decodeWidth - 1): Bool = {

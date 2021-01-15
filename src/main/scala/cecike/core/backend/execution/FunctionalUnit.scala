@@ -10,7 +10,7 @@ import cecike.utils._
 
 class FunctionalUnitIO(val hasBRU: Boolean) extends Bundle {
   val flush = Input(Bool())
-  val microOpIn = Input(UndirectionedValid(new IssueMicroOp))
+  val microOpIn = Input(UndirectionalValid(new IssueMicroOp))
   val rsRead = Vec(2, Flipped(new RegisterFileReadPort))
 
   val fuType = Output(UInt(FunctionUnitType.fuTypeWidth.W))
@@ -34,7 +34,7 @@ class FunctionalUnit(hasALU: Boolean, hasBRU: Boolean) extends Module {
   val src2 = RegNext(Mux(InstructionType.isRegToRegInstruction(io.microOpIn.bits.instType),
     io.rsRead(1).data,
     io.microOpIn.bits.immediate))
-  val stage2MicroOp = Reg(UndirectionedValid(new IssueMicroOp))
+  val stage2MicroOp = Reg(UndirectionalValid(new IssueMicroOp))
   stage2MicroOp := microOpIn
 
   // Stage 2 - compute
