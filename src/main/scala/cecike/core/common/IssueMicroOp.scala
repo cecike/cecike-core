@@ -50,7 +50,7 @@ object IssueMicroOp {
     microOp.immediate := microOpIn.immediate
 
     microOp.rdInfo.bits := microOpIn.physicalRd
-    microOp.rdInfo.valid := microOpIn.physicalRd.orR
+    microOp.rdInfo.valid := microOpIn.rdValid
 
     microOp.robIndex := microOpIn.robIndex
 

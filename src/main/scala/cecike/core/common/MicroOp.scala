@@ -45,30 +45,11 @@ class MicroOp extends Bundle {
 
 object MicroOp {
   def apply() = {
-    val microOp = Wire(new MicroOp)
-    microOp.valid := false.B
-    microOp.pc := 0.U
-    microOp.instruction := 0.U
-
-    microOp.branchTag := 0.U
-    microOp.branchPredictionInfo.taken := false.B
-    microOp.branchPredictionInfo.dest := 0.U
+    val microOp = WireDefault(new MicroOp, DontCare)
 
     microOp.instType := InstructionType.X
     microOp.fuType := FunctionUnitType.FU_ALU
-    microOp.fuOp := 0.U
-    microOp.immediate := 0.U
-    microOp.rs1Valid := false.B
-    microOp.rs2Valid := false.B
-    microOp.rdValid := false.B
-    microOp.physicalRs1 := 0.U
-    microOp.physicalRs2 := 0.U
-    microOp.physicalRd := 0.U
-    microOp.physicalRs1Busy := false.B
-    microOp.physicalRs2Busy := false.B
-    microOp.oldPhysicalRd := 0.U
 
-    microOp.robIndex := 0.U
     microOp
   }
 }
