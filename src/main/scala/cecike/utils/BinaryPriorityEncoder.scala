@@ -64,6 +64,28 @@ object BinaryPriorityEncoderOH {
   }
 }
 
+object MultiBinaryPriorityEncoder {
+  def apply(in: UInt, length: Int): (Vec[Valid[UInt]], UInt) = {
+    require(in.getWidth > 0 && in.getWidth >= length && length > 0)
+    val outputWidth = log2Ceil(in.getWidth)
+    val result = Wire(Vec(length, Valid(UInt(outputWidth.W))))
+    val mask = Wire(Vec(length, UInt(in.getWidth.W)))
+    val temp = Wire(Vec(length, UInt(in.getWidth.W)))
+
+    result(0) := BinaryPriorityEncoder(in)
+    mask(0) := BinaryPriorityEncoderOH(in)
+    temp(0) := in & (~mask(0)).asUInt
+
+    for (i <- 1 until length) {
+      result(i) := BinaryPriorityEncoder(temp(i - 1))
+      mask(i) := BinaryPriorityEncoderOH(temp(i - 1))
+      temp(i) := temp(i - 1) & (~mask(i)).asUInt
+    }
+
+    (result, mask.reduce(_|_))
+  }
+}
+
 object BinaryOHToInt {
   def apply(in: Bits) = {
     BinaryPriorityEncoder(in).bits
