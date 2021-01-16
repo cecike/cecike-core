@@ -48,26 +48,37 @@ object BinaryPriorityEncoderOH {
 }
 
 object MultiBinaryPriorityEncoder {
-  def apply(in: UInt, length: Int): (Vec[Valid[UInt]], UInt) = {
-    require(in.getWidth > 0 && in.getWidth >= length && length > 0)
+  def apply(in: UInt, mask: Seq[UInt], n: Int): (Vec[Valid[UInt]], UInt) = {
+    require(in.getWidth > 0 && in.getWidth >= n && n > 0)
+    require(mask.length == n)
+    require(mask.map(_.getWidth == in.getWidth).reduce(_&_))
+
     val outputWidth = log2Ceil(in.getWidth)
-    val result = Wire(Vec(length, Valid(UInt(outputWidth.W))))
-    val mask = Wire(Vec(length, UInt(in.getWidth.W)))
-    val temp = Wire(Vec(length, UInt(in.getWidth.W)))
+    val result = Wire(Vec(n, Valid(UInt(outputWidth.W))))
+    val resultOH = Wire(Vec(n, UInt(in.getWidth.W)))
+    val temp = Wire(Vec(n, UInt(in.getWidth.W)))
 
-    val commonResult = CommonBinaryPriorityEncoder(in)
+    val commonResult = CommonBinaryPriorityEncoder(in & mask(0))
     result(0) := commonResult._1
-    mask(0) := commonResult._2
-    temp(0) := in & (~mask(0)).asUInt
+    resultOH(0) := commonResult._2
+    temp(0) := in & (~resultOH(0)).asUInt
 
-    for (i <- 1 until length) {
-      val commonResultI = CommonBinaryPriorityEncoder(temp(i - 1))
+    for (i <- 1 until n) {
+      val commonResultI = CommonBinaryPriorityEncoder(temp(i - 1) & mask(i))
       result(i) := commonResultI._1
-      mask(i) := commonResultI._2
-      temp(i) := temp(i - 1) & (~mask(i)).asUInt
+      resultOH(i) := commonResultI._2
+      temp(i) := temp(i - 1) & (~resultOH(i)).asUInt
     }
 
-    (result, mask.reduce(_|_))
+    (result, resultOH.reduce(_|_))
+  }
+
+  def apply(in: UInt, n: Int): (Vec[Valid[UInt]], UInt) = {
+    val mask = Wire(Vec(n, UInt(in.getWidth.W)))
+    for (i <- 0 until n) {
+      mask(i) := Fill(in.getWidth, true.B)
+    }
+    apply(in, mask, n)
   }
 }
 
