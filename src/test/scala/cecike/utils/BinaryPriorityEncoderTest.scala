@@ -15,11 +15,13 @@ class BinaryPriorityEncoderModule extends Module {
 
   io.o := BinaryPriorityEncoder(io.in)
 
+  val utilOH = BinaryPriorityEncoderOH(io.in)
+
   val chiselLibOutput = PriorityEncoder(io.in)
   val chiselLibValid = Mux(io.in === 0.U, false.B, true.B)
 
   io.lib := chiselLibOutput
-  io.ok := (io.o.valid === chiselLibValid) && (io.o.bits === chiselLibOutput)
+  io.ok := (io.o.valid === chiselLibValid) && (io.o.bits === chiselLibOutput) && (io.o.bits === OHToUInt(utilOH))
 }
 
 class BinaryPriorityEncoderTest(c: BinaryPriorityEncoderModule) extends PeekPokeTester(c) {
