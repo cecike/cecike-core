@@ -3,8 +3,13 @@ package cecike.core.common
 import chisel3._
 import chisel3.util._
 
+object UseSmallCecikeOption {
+  val YES = true
+  val NO = false
+}
+
 object Constants {
-  val useSmallCecike = false
+  val useSmallCecike = UseSmallCecikeOption.NO
 
   val xLen = 64 // From RISC-V Spec
   val wLen = 32
