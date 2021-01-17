@@ -7,7 +7,7 @@ object ReversedBinaryPriorityEncoder {
   def apply(in: Bits): Valid[UInt] = {
     require(in.getWidth > 0)
     val roundedInputWidth = 1 << log2Ceil(in.getWidth)
-    print(roundedInputWidth)
+    println(roundedInputWidth)
     val roundedInput = Wire(UInt(roundedInputWidth.W))
     roundedInput := in
     checkedApply(roundedInput, roundedInputWidth)
