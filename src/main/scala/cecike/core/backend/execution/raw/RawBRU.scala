@@ -6,6 +6,7 @@ import cecike.core.common.Constants._
 import cecike.utils._
 
 class RawBRUIO extends Bundle {
+  val valid = Input(Bool())
   val op = Input(UInt(BRUOp.bruOpWidth.W))
   val pc = Input(UInt(xLen.W))
   val offset = Input(UInt(xLen.W))
@@ -19,7 +20,7 @@ class RawBRUIO extends Bundle {
 class RawBRU extends Module {
   val io = IO(new RawBRUIO)
 
-  val op = UIntToOH(io.op)
+  val op = Mux(io.valid, UIntToOH(io.op), OHToUInt(BRUOp.X))
   val src1 = io.src1
   val src2 = io.src2
 

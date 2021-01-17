@@ -49,6 +49,7 @@ class FunctionalUnit(hasALU: Boolean, hasBRU: Boolean) extends Module {
 
   // BRU
   val bru = Module(new RawBRU)
+  bru.io.valid := (stage2MicroOp.bits.fuType & FunctionUnitType.FU_BRU).orR
   bru.io.op := stage2MicroOp.bits.fuOp
   bru.io.pc := stage2MicroOp.bits.pc
   bru.io.offset := stage2MicroOp.bits.immediate
