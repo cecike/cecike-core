@@ -7,10 +7,8 @@ import cecike.core.common.MicroOp
 import cecike.utils._
 
 class RenameStageIO extends Bundle {
-  val microOpIn = Input(Vec(decodeWidth, new MicroOp))
-  val microOpOut = Output(Valid(Vec(decodeWidth, new MicroOp)))
-
-  val stall = Output(Bool())
+  val microOpIn = Flipped(DecoupledIO(Vec(decodeWidth, new MicroOp)))
+  val microOpOut = DecoupledIO(Vec(decodeWidth, new MicroOp))
 
   // TODO: Inputs from ROB and compute units
   val flush = Input(Bool())
@@ -25,6 +23,9 @@ class RenameStageIO extends Bundle {
 
 class RenameStage extends Module {
   val io = IO(new RenameStageIO)
+
+  // External stall
+  val externalStall = io.microOpOut.valid && !io.microOpOut.ready
 
   // Rename stage 1 - read free list and
   // map table while generate order info.
@@ -41,10 +42,10 @@ class RenameStage extends Module {
   mapTable.io.flush := io.flush
 
   // Rs, Rd of input microOp
-  val rs1s = io.microOpIn.map(_.rs1())
-  val rs2s = io.microOpIn.map(_.rs2())
-  val rds = io.microOpIn.map(_.rd())
-  val rdsValid = rds.map(_.orR && !io.flush)
+  val rs1s = io.microOpIn.bits.map(_.rs1())
+  val rs2s = io.microOpIn.bits.map(_.rs2())
+  val rds = io.microOpIn.bits.map(_.rd())
+  val rdsValid = rds.map(_.orR && !io.flush && !externalStall && io.microOpIn.valid)
 
   // Connects input signals
   for (i <- 0 until decodeWidth) {
@@ -62,11 +63,10 @@ class RenameStage extends Module {
   }
 
   // Results from submodule
-  val freeListStall = !freeList.io.allocateResp.valid
   val freeListResult = freeList.io.allocateResp.bits
 
   // Stall here
-  io.stall := freeListStall
+  io.microOpIn.ready := freeList.io.allocateResp.valid && !externalStall
 
   val physicalRs1 = mapTable.io.rs1ReadPort.map(_.physicalAddr)
   val physicalRs2 = mapTable.io.rs2ReadPort.map(_.physicalAddr)
@@ -89,20 +89,34 @@ class RenameStage extends Module {
 
   // We will write our results here.
   val stage1MicroOp = Wire(Vec(decodeWidth, new MicroOp))
-  stage1MicroOp := io.microOpIn
+  stage1MicroOp := io.microOpIn.bits
   io.debug := stage1MicroOp
 
   for (i <- 0 until decodeWidth) {
     stage1MicroOp(i).physicalRs1 := physicalRs1(i)
     stage1MicroOp(i).physicalRs2 := physicalRs2(i)
     stage1MicroOp(i).oldPhysicalRd := physicalRd(i)
-    stage1MicroOp(i).physicalRd := Mux(io.microOpIn(i).rdValid, freeListResult(i), 0.U)
+    stage1MicroOp(i).physicalRd := Mux(io.microOpIn.bits(i).rdValid, freeListResult(i), 0.U)
     stage1MicroOp(i).orderInfo := orderInfo(i)
   }
 
   // Partial result buffer
-  val outputValid = RegNext(!freeListStall && !io.flush)
-  val microOpReg = RegNext(stage1MicroOp)
+  val outputValid = RegInit(false.B)
+  val microOpReg = Reg(Vec(decodeWidth, new MicroOp))
+
+  val outputValidNext = Wire(Bool())
+  val microOpRegNext = Wire(Vec(decodeWidth, new MicroOp))
+
+  // Default value
+  outputValidNext := io.microOpIn.fire()
+  microOpRegNext := stage1MicroOp
+
+  // Update register when no external stall
+  when (!externalStall) {
+    outputValid := outputValidNext
+    microOpReg := microOpRegNext
+  }
+
   val stage2MicroOp = Wire(Vec(decodeWidth, new MicroOp))
   stage2MicroOp := microOpReg
 

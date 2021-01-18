@@ -10,7 +10,7 @@ import cecike.utils._
 
 class FunctionalUnitIO(val hasBRU: Boolean) extends Bundle {
   val flush = Input(Bool())
-  val microOpIn = Input(UndirectionalValid(new IssueMicroOp))
+  val microOpIn = Flipped(DecoupledIO(new IssueMicroOp))
   val rsRead = Vec(2, Flipped(new RegisterFileReadPort))
   val branchROBInfo = if (hasBRU) Flipped(new BranchROBReadPort) else null
 
@@ -66,6 +66,7 @@ class FunctionalUnit(hasALU: Boolean, hasBRU: Boolean) extends Module {
   }
 
   // Output
+  io.microOpIn.ready := true.B
   io.rdWrite.valid := stage2MicroOp.valid && stage2MicroOp.bits.rdInfo.valid
   io.rdWrite.data := Mux(hasBRU.B && bru.io.result.valid, bru.io.result.bits, aluResult)
   io.rdWrite.addr := stage2MicroOp.bits.rdInfo.bits
