@@ -34,7 +34,7 @@ class NaiveIssueQueue(fuNum: Int, depth: Int) extends Module {
     p.branchInfo := io.branchInfo
     p.readyRdMask := io.readyRdMask
     p.microOpIn := DontCare
-    p.select := DontCare
+    p.select := false.B
   }
 
   // Select logic
