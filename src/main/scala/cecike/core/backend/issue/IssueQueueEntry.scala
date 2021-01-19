@@ -38,7 +38,7 @@ class IssueQueueEntry extends Module {
     when (microOpValid) {
       microOp.rs1Info.busy := rs1Busy
       microOp.rs2Info.busy := rs2Busy
-      when (io.select || ((microOp.branchTag & io.branchInfo.tag).orR && io.branchInfo.mispredicted)) {
+      when (io.select || ((microOp.branchTag & io.branchInfo.tag).orR && io.branchInfo.mispredicted && io.branchInfo.valid)) {
         microOpValid := false.B
       }
     }

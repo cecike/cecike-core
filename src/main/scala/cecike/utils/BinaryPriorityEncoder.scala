@@ -82,7 +82,7 @@ object MultiBinaryPriorityEncoder {
   }
 }
 
-object BinaryOHToInt {
+object BinaryOHToUInt {
   def apply(in: Bits) = {
     BinaryPriorityEncoder(in).bits
   }
