@@ -9,7 +9,7 @@ class BranchPredictionInfo extends Bundle {
 }
 
 class BranchInfo extends Bundle {
-  val tag = UInt(branchTagWidth.W)
+  val tag = UInt(maxBranchCount.W)
   val taken = Bool()
   val mispredicted = Bool()
   val dest = UInt(xLen.W)
@@ -17,6 +17,6 @@ class BranchInfo extends Bundle {
 
 // TODO: Move to module file when implement the BROB
 class BranchROBReadPort extends Bundle {
-  val branchTag = Input(UInt(branchTagWidth.W))
+  val branchTag = Input(UInt(maxBranchCount.W))
   val valid = Output(Bool())
 }

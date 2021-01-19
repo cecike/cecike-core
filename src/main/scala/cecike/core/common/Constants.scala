@@ -25,8 +25,7 @@ object Constants {
   val decodeWidth = withSmallOption(4, 2)
   val issueWidth = withSmallOption(6, 3)
 
-  val branchSnapshotCount = 8
-  val branchTagWidth = log2Ceil(branchSnapshotCount)
+  val maxBranchCount = 8
 
   val robBankNum = decodeWidth
   val robRowNum = 24

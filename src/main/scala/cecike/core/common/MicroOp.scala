@@ -9,7 +9,7 @@ class MicroOp extends Bundle {
   val instruction = UInt(instructionLen.W)
 
   // TODO: Detailed design in branch prediction
-  val branchTag = UInt(branchTagWidth.W)
+  val branchTag = UInt(maxBranchCount.W)
   val branchPredictionInfo = new BranchPredictionInfo
 
   // TODO: Generate these signals in decode stage

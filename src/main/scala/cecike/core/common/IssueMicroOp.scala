@@ -13,7 +13,7 @@ class IssueMicroOp extends Bundle {
   // Micro Op Info
   val pc = UInt(xLen.W)
 
-  val branchTag = UInt(branchTagWidth.W)
+  val branchTag = UInt(maxBranchCount.W)
   val branchPredictionInfo = new BranchPredictionInfo
 
   val instType = UInt(InstructionType.instTypeWidth.W)
