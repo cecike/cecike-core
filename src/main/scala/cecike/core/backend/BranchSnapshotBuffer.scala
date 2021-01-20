@@ -48,7 +48,7 @@ class BranchSnapshotBuffer extends Module {
   for (i <- 0 until decodeWidth) {
     allocate(i) := Mux(io.allocateReq(i), UIntToOH(allocatedCount(i)), 0.U)
     allocatedCount(i + 1) := allocatedCount(i) + Mux(io.allocateReq(i), 1.U, 0.U)
-    allocateValid(i + 1) := allocateValid(i) && allocatedCount(i + 1) === snapshotHead
+    allocateValid(i + 1) := allocateValid(i) && allocatedCount(i + 1) =/= snapshotHead
   }
   io.allocateResp.bits := allocate
   io.allocateResp.valid := allocateValid(decodeWidth)
@@ -59,7 +59,7 @@ class BranchSnapshotBuffer extends Module {
 
   snapshotHead := snapshotHead + PopCount(io.deallocateReq)
 
-  val snapshotAllocateMask = allocate.reduce(_|_)
+  val snapshotAllocateMask = Mux(allocateValid(decodeWidth), allocate.reduce(_|_), 0.U)
 
   val tag = BinaryOHToUInt(io.branchInfo.tag)
   val tagMask = (~0.U(maxBranchCount.W) << tag).asUInt

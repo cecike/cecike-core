@@ -32,6 +32,8 @@ object Constants {
   val robEntryNum = robBankNum * robRowNum
   val robAddressWidth = log2Ceil(robEntryNum)
 
+  val verboseTest = false
+
   def withSmallOption[T](data: T, opt: T) = {
     if (useSmallCecike) {
       opt
