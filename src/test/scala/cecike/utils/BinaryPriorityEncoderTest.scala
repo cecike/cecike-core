@@ -35,8 +35,7 @@ class BinaryPriorityEncoderTest(c: BinaryPriorityEncoderModule) extends PeekPoke
 class BinaryPriorityEncoderTester extends ChiselFlatSpec {
   private val backendNames = if (firrtl.FileUtils.isCommandAvailable(Seq("verilator", "--version"))) {
     Array("verilator")
-  }
-  else {
+  } else {
     Array("firrtl")
   }
 

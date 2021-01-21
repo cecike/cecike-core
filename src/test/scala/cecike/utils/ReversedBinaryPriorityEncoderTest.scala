@@ -33,8 +33,7 @@ class ReversedBinaryPriorityEncoderTest(c: ReversedBinaryPriorityEncoderModule) 
 class ReversedBinaryPriorityEncoderTester extends ChiselFlatSpec {
   private val backendNames = if (firrtl.FileUtils.isCommandAvailable(Seq("verilator", "--version"))) {
     Array("verilator")
-  }
-  else {
+  } else {
     Array("firrtl")
   }
 
