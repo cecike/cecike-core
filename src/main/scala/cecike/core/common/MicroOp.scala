@@ -108,3 +108,42 @@ object IssueMicroOp {
     microOp
   }
 }
+
+class ROBMicroOp extends Bundle {
+  val valid = Bool()
+
+  // Status
+  // TODO: add exceptions
+  val done = Bool()
+
+  val branchTag = UInt(maxBranchCount.W)
+
+  // To update map table
+  val rdValid = Bool()
+  val logicalRd = UInt(logicalRegisterAddressWidth.W)
+  val physicalRd = UInt(physicalRegisterAddressWidth.W)
+  val oldPhysicalRd = UInt(physicalRegisterAddressWidth.W)
+
+  // To recover from ...
+  val isBranchOp = Bool()
+  val branchInfo = new BranchInfo
+}
+
+object ROBMicroOp extends Bundle {
+  def apply(microOpIn: MicroOp) = {
+    val microOp = Wire(new ROBMicroOp)
+    microOp.valid := microOpIn.valid
+
+    microOp.done := false.B
+    microOp.branchTag := microOpIn.branchTag
+
+    microOp.rdValid := microOpIn.rdValid
+    microOp.logicalRd := microOpIn.rd()
+    microOp.physicalRd := microOpIn.physicalRd
+    microOp.oldPhysicalRd := microOpIn.oldPhysicalRd
+    microOp.isBranchOp := (microOpIn.fuType & FunctionUnitType.FU_BRU).orR()
+    microOp.branchInfo := DontCare
+
+    microOp
+  }
+}
