@@ -13,7 +13,6 @@ class FunctionalUnitIO(val hasBRU: Boolean) extends Bundle {
   val flush = Input(Bool())
   val microOpIn = Flipped(DecoupledIO(new IssueMicroOp))
   val rsRead = Vec(2, Flipped(new RegisterFileReadPort))
-  val branchROBInfo = if (hasBRU) Flipped(new BranchSnapshotBufferReadPort) else null
 
   val fuType = Output(UInt(FunctionUnitType.fuTypeWidth.W))
   val readyROB = Valid(UInt(robAddressWidth.W))
@@ -59,10 +58,9 @@ class FunctionalUnit(hasALU: Boolean, hasBRU: Boolean) extends Module {
   val mispredictedTaken = bru.io.resultPC.valid =/= stage2MicroOp.bits.branchPredictionInfo.taken
   val mispredictedDest = bru.io.resultPC.bits =/= stage2MicroOp.bits.branchPredictionInfo.dest
   if (hasBRU) {
-    io.branchROBInfo.branchTag := stage2MicroOp.bits.branchTag
     io.branchInfo.tag := stage2MicroOp.bits.branchTag
-    io.branchInfo.mispredicted := mispredictedTaken || mispredictedDest || !io.branchROBInfo.valid
-    io.branchInfo.taken := bru.io.resultPC.valid && io.branchROBInfo.valid
+    io.branchInfo.mispredicted := mispredictedTaken || mispredictedDest
+    io.branchInfo.taken := bru.io.resultPC.valid
     io.branchInfo.dest := stage2MicroOp.bits.branchPredictionInfo.dest
     io.branchInfo.valid := (stage2MicroOp.bits.fuType & FunctionUnitType.FU_BRU).orR
   }

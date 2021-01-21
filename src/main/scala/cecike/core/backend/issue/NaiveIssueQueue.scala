@@ -9,7 +9,6 @@ import cecike.utils._
 class NaiveIssueQueueIO(val fuNum: Int) extends Bundle {
   val microOpIn = Flipped(DecoupledIO(Vec(decodeWidth, Valid(new IssueMicroOp))))
   val readyRdMask = Input(UInt(physicalRegisterNum.W))
-  val branchInfo = Input(new BranchInfo)
   val flush = Input(Bool())
   val fuTypes = Input(Vec(fuNum, UInt(FunctionUnitType.fuTypeWidth.W)))
 
@@ -31,7 +30,6 @@ class NaiveIssueQueue(fuNum: Int, depth: Int) extends Module {
   // Common inputs
   queueEntriesIO.foreach { p =>
     p.flush := io.flush
-    p.branchInfo := io.branchInfo
     p.readyRdMask := io.readyRdMask
     p.microOpIn := DontCare
     p.select := false.B

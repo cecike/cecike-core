@@ -9,7 +9,6 @@ import cecike.utils._
 class IssueQueueEntryIO extends Bundle {
   val microOpIn = Input(UndirectionalValid(new IssueMicroOp))
   val readyRdMask = Input(UInt(physicalRegisterNum.W))
-  val branchInfo = Input(new BranchInfo)
   val select = Input(Bool())
   val flush = Input(Bool())
 
@@ -38,7 +37,7 @@ class IssueQueueEntry extends Module {
     when (microOpValid) {
       microOp.rs1Info.busy := rs1Busy
       microOp.rs2Info.busy := rs2Busy
-      when (io.select || ((microOp.branchTag & io.branchInfo.tag).orR && io.branchInfo.mispredicted && io.branchInfo.valid)) {
+      when (io.select) {
         microOpValid := false.B
       }
     }

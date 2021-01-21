@@ -15,8 +15,6 @@ class BranchSnapshotBufferIO extends Bundle {
   val allocateReq = Input(Vec(decodeWidth, Bool()))
   val allocateResp = Output(Valid(Vec(decodeWidth, UInt(maxBranchCount.W))))
   val deallocateReq = Input(Vec(decodeWidth, Bool()))
-  val readReq = new BranchSnapshotBufferReadPort
-  val branchInfo = Input(new BranchInfo)
 }
 
 // Allocate branch tag and store branch status
@@ -27,7 +25,6 @@ class BranchSnapshotBuffer extends Module {
 
   val io = IO(new BranchSnapshotBufferIO)
 
-  val snapshotValid = RegInit(0.U(maxBranchCount.W))
   val snapshotHead = RegInit(0.U(snapshotCounterWidth.W))
   val snapshotTail = RegInit(0.U(snapshotCounterWidth.W))
 
@@ -58,17 +55,4 @@ class BranchSnapshotBuffer extends Module {
   }
 
   snapshotHead := snapshotHead + PopCount(io.deallocateReq)
-
-  val snapshotAllocateMask = Mux(allocateValid(decodeWidth), allocate.reduce(_|_), 0.U)
-
-  val tag = BinaryOHToUInt(io.branchInfo.tag)
-  val tagMask = (~0.U(maxBranchCount.W) << tag).asUInt
-  val headMask = (~(~0.U(maxBranchCount) << snapshotHead)).asUInt
-  val invalidMaskTagBigger = tagMask | headMask
-  val invalidMaskTagSmaller = tagMask & headMask
-  val snapshotInvalidMask = (~Mux(io.branchInfo.valid && io.branchInfo.mispredicted,
-    Mux(tag > snapshotHead, invalidMaskTagBigger, invalidMaskTagSmaller), 0.U)).asUInt()(maxBranchCount - 1, 0)
-  snapshotValid := (snapshotValid | snapshotAllocateMask) & snapshotInvalidMask
-
-  io.readReq.valid := snapshotValid(BinaryOHToUInt(io.readReq.branchTag))
 }
