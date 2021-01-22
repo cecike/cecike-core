@@ -28,15 +28,17 @@ object Constants {
   val maxBranchCount = 8
 
   val robBankNum = decodeWidth
-  val robRowNum = 24
+  val robRowNum = withSmallOption(32, 16)
   val robEntryNum = robBankNum * robRowNum
   val robAddressWidth = log2Ceil(robEntryNum)
+  val robRowAddressWidth = log2Ceil(robRowNum)
+  val robBankAddressWidth = log2Ceil(robBankNum)
 
   val verboseTest = false
 
-  def withSmallOption[T](data: T, opt: T) = {
+  def withSmallOption[T](data: T, alt: T) = {
     if (useSmallCecike) {
-      opt
+      alt
     } else {
       data
     }

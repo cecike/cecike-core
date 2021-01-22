@@ -1,6 +1,5 @@
 package cecike.core.backend
 
-import cecike.core.common.BranchInfo
 import chisel3._
 import chisel3.util._
 import cecike.core.common.Constants._

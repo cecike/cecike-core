@@ -117,6 +117,7 @@ class ROBMicroOp extends Bundle {
   val done = Bool()
 
   val branchTag = UInt(maxBranchCount.W)
+  val orderInfo = new OrderInfo
 
   // To update map table
   val rdValid = Bool()
@@ -127,6 +128,10 @@ class ROBMicroOp extends Bundle {
   // To recover from ...
   val isBranchOp = Bool()
   val branchInfo = new BranchInfo
+
+  def needFlush(): Bool = {
+    valid && done && isBranchOp && branchInfo.valid && branchInfo.mispredicted
+  }
 }
 
 object ROBMicroOp extends Bundle {
@@ -136,6 +141,7 @@ object ROBMicroOp extends Bundle {
 
     microOp.done := false.B
     microOp.branchTag := microOpIn.branchTag
+    microOp.orderInfo := microOpIn.orderInfo
 
     microOp.rdValid := microOpIn.rdValid
     microOp.logicalRd := microOpIn.rd()
