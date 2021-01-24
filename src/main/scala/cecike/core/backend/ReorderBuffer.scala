@@ -22,13 +22,15 @@ class ReorderBufferDebugIO extends Bundle {
   val bufferTail = UInt(robRowAddressWidth.W)
   val currentEntry = new ReorderBufferEntry
   val shouldCommit = Bool()
+  val commitReady = UInt(decodeWidth.W)
+  val commitDone = UInt(decodeWidth.W)
 }
 
 class ReorderBufferIO extends Bundle {
   // From rename stage - store these op into ROB
   val microOpIn = Flipped(DecoupledIO(Vec(decodeWidth, new MicroOp)))
   // From FU - rob sub-entry ready info
-  val robReady = Vec(issueWidth, Flipped(Valid(UInt(physicalRegisterAddressWidth.W))))
+  val robReady = Vec(issueWidth, Flipped(Valid(UInt(robAddressWidth.W))))
   // From BRU - branch status
   val branchInfo = Input(new BranchInfo)
 
@@ -100,6 +102,15 @@ class ReorderBuffer extends Module {
     bufferTail := bufferTail + 1.U
   }
 
+  // Write ready info
+  io.robReady.foreach { p =>
+    val row = rowAddress(p.bits)
+    val bank = bankAddress(p.bits)
+    when (p.valid) {
+      buffer(row).microOp(bank).done := true.B
+    }
+  }
+
   // Deallocate free list
   for (i <- 0 until decodeWidth) {
     io.freelistCommitDeallocateReqPort(i).valid := commit && currentEntry().microOp(i).rdValid
@@ -125,4 +136,6 @@ class ReorderBuffer extends Module {
   io.debug.bufferTail := bufferTail
   io.debug.currentEntry := currentEntry()
   io.debug.shouldCommit := commit
+  io.debug.commitReady := currentEntryReady
+  io.debug.commitDone := currentEntryDone
 }
