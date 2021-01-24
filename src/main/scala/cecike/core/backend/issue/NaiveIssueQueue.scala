@@ -46,7 +46,7 @@ class NaiveIssueQueue(fuNum: Int, depth: Int) extends Module {
 
   val entryEmpty = MultiBinaryPriorityEncoder(entryEmptyOH, decodeWidth)
   val entryReady = MultiBinaryPriorityEncoder(entryReadyOH, entryMaskOH, fuNum)
-  io.microOpIn.ready := (!io.microOpIn.valid) || (io.microOpIn.bits zip entryEmpty._1).map { p =>
+  io.microOpIn.ready := (io.microOpIn.bits zip entryEmpty._1).map { p =>
     !p._1.valid || p._2.valid
   }.reduce(_&&_)
 
@@ -60,6 +60,6 @@ class NaiveIssueQueue(fuNum: Int, depth: Int) extends Module {
   for (i <- 0 until decodeWidth) {
     val entry = entryEmpty._1(i)
     queueEntriesIO(entry.bits).microOpIn.bits := io.microOpIn.bits(i).bits
-    queueEntriesIO(entry.bits).microOpIn.valid := io.microOpIn.valid && io.microOpIn.bits(i).valid && entry.valid
+    queueEntriesIO(entry.bits).microOpIn.valid := io.microOpIn.fire() && io.microOpIn.bits(i).valid && entry.valid
   }
 }
