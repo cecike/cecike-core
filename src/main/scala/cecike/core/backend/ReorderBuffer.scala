@@ -16,6 +16,14 @@ class ReorderBufferEntry extends Bundle {
   def pc(n: UInt = 0.U): UInt = basePC + (n << 2.U)
 }
 
+class ReorderBufferDebugIO extends Bundle {
+  val bufferFlushed = UInt(robRowNum.W)
+  val bufferHead = UInt(robRowAddressWidth.W)
+  val bufferTail = UInt(robRowAddressWidth.W)
+  val currentEntry = new ReorderBufferEntry
+  val shouldCommit = Bool()
+}
+
 class ReorderBufferIO extends Bundle {
   // From rename stage - store these op into ROB
   val microOpIn = Flipped(DecoupledIO(Vec(decodeWidth, new MicroOp)))
@@ -27,6 +35,8 @@ class ReorderBufferIO extends Bundle {
   val flush = Output(Bool())
   val mapTableRdCommit = Vec(decodeWidth, Flipped(new MapTableWritePort))
   val freelistCommitDeallocateReqPort = Vec(decodeWidth, Valid(UInt(physicalRegisterAddressWidth.W)))
+
+  val debug = Output(new ReorderBufferDebugIO)
 }
 
 class ReorderBuffer extends Module {
@@ -108,4 +118,11 @@ class ReorderBuffer extends Module {
     io.mapTableRdCommit(i).logicalAddr := currentEntry().microOp(i).logicalRd
     io.mapTableRdCommit(i).physicalAddr := currentEntry().microOp(i).physicalRd
   }
+
+  // Debug signals
+  io.debug.bufferFlushed := bufferFlushed
+  io.debug.bufferHead := bufferHead
+  io.debug.bufferTail := bufferTail
+  io.debug.currentEntry := currentEntry()
+  io.debug.shouldCommit := commit
 }
