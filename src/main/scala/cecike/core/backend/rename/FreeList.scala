@@ -29,7 +29,7 @@ class FreeList extends Module {
     allocateResp(index).valid := mask && result.valid
   }
   connectAllocateResp(allocateRespLo, 0)
-  connectAllocateResp(allocateRespLoRev, 1)
+  connectAllocateResp(allocateRespLoRev, 1, !allocateRespLoEq)
 
   for (i <- 0 until decodeWidth) {
     io.allocateResp.bits(i) := allocateResp(i).bits
