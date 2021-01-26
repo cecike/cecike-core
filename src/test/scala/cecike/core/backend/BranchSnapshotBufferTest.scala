@@ -19,7 +19,7 @@ class BranchSnapshotBufferSimpleTest(c: BranchSnapshotBuffer) extends PeekPokeTe
   for (j <- 0 until decodeWidth) {
     expect(c.io.allocateResp.bits(j), IntToOH(j))
   }
-  step(withSmallOption(1, 3))
+  step(3)
   expect(c.io.allocateResp.valid, false)
   for (i <- 0 until decodeWidth) {
     poke(c.io.allocateReq(i), false)

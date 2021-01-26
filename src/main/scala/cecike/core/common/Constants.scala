@@ -3,48 +3,33 @@ package cecike.core.common
 import chisel3._
 import chisel3.util._
 
-object UseSmallCecikeOption {
-  val YES = true
-  val NO = false
-}
-
 object Constants {
-  val useSmallCecike = UseSmallCecikeOption.NO
-
   val xLen = 64 // From RISC-V Spec
   val wLen = 32
 
   val instructionLen = 32
 
   val logicalRegisterNum = 32
-  val physicalRegisterNum = withSmallOption(128, 64)
+  val physicalRegisterNum = 128
 
   val logicalRegisterAddressWidth = log2Ceil(logicalRegisterNum)
   val physicalRegisterAddressWidth = log2Ceil(physicalRegisterNum)
 
-  val decodeWidth = withSmallOption(4, 2)
-  val issueWidth = withSmallOption(6, 3)
+  val decodeWidth = 2
+  val issueWidth = 3
 
   val issueClusterNum = 2
 
   val maxBranchCount = 8
 
   val robBankNum = decodeWidth
-  val robRowNum = withSmallOption(32, 16)
+  val robRowNum = 32
   val robEntryNum = robBankNum * robRowNum
   val robAddressWidth = log2Ceil(robEntryNum)
   val robRowAddressWidth = log2Ceil(robRowNum)
   val robBankAddressWidth = log2Ceil(robBankNum)
 
   val verboseTest = false
-
-  def withSmallOption[T](data: T, alt: T) = {
-    if (useSmallCecike) {
-      alt
-    } else {
-      data
-    }
-  }
 
   object InstructionType {
     val instTypeWidth = 3

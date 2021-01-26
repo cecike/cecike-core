@@ -16,31 +16,20 @@ class FreeList extends Module {
 
   val freeList = RegInit((~1.U(physicalRegisterNum.W)).asUInt)
 
-  val freeListHalfWidth = physicalRegisterNum >> 1
-  val freeListLo = freeList(freeListHalfWidth - 1, 0)
-  val freeListHi = freeList(physicalRegisterNum - 1, freeListHalfWidth)
-
   // Generate allocate resp
   val allocateResp = Wire(Vec(decodeWidth, Valid(UInt(physicalRegisterAddressWidth.W))))
 
-  val allocateRespLo = BinaryPriorityEncoder(freeListLo)
-  val allocateRespLoRev = ReversedBinaryPriorityEncoder(freeListLo)
+  val allocateList = freeList(physicalRegisterNum - 1, 0)
+  val allocateRespLo = BinaryPriorityEncoder(allocateList)
+  val allocateRespLoRev = ReversedBinaryPriorityEncoder(allocateList)
   val allocateRespLoEq = allocateRespLo.bits === allocateRespLoRev.bits
 
-  val allocateRespHi = BinaryPriorityEncoder(freeListHi)
-  val allocateRespHiRev = ReversedBinaryPriorityEncoder(freeListHi)
-  val allocateRespHiEq = allocateRespHi.bits === allocateRespHiRev.bits
-
-  def connectAllocateResp(result: Valid[UInt], index: Int, hi: Boolean, mask: Bool = true.B): Unit = {
-    allocateResp(index).bits := Cat(hi.B, result.bits)
+  def connectAllocateResp(result: Valid[UInt], index: Int, mask: Bool = true.B): Unit = {
+    allocateResp(index).bits := result.bits
     allocateResp(index).valid := mask && result.valid
   }
-  connectAllocateResp(allocateRespLo, 0, false)
-  connectAllocateResp(allocateRespHi, 1, true)
-  if (!useSmallCecike) {
-    connectAllocateResp(allocateRespLoRev, 2, false, !allocateRespLoEq)
-    connectAllocateResp(allocateRespHiRev, 3, true, !allocateRespHiEq)
-  }
+  connectAllocateResp(allocateRespLo, 0)
+  connectAllocateResp(allocateRespLoRev, 1)
 
   for (i <- 0 until decodeWidth) {
     io.allocateResp.bits(i) := allocateResp(i).bits
