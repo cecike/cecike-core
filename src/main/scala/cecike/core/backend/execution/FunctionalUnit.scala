@@ -38,41 +38,55 @@ class FunctionalUnit(hasALU: Boolean, hasBRU: Boolean) extends Module {
   val stage2MicroOp = Reg(UndirectionalValid(new IssueMicroOp))
   stage2MicroOp := microOpIn
 
+  val op = stage2MicroOp.bits
+  val opValid = stage2MicroOp.valid
+
   // Stage 2 - compute
 
   // ALU
+  val isALUOp = hasALU.B && FunctionUnitType.typeMatch(op.fuType, FunctionUnitType.FU_ALU)
   val alu = Module(new RawALU)
-  alu.io.op := stage2MicroOp.bits.fuOp
+  alu.io.op := op.fuOp
   alu.io.src1 := src1
   alu.io.src2 := src2
   val aluResult = alu.io.result
 
   // BRU
+  val isBRUOp = hasBRU.B && FunctionUnitType.typeMatch(op.fuType, FunctionUnitType.FU_BRU)
   val bru = Module(new RawBRU)
-  bru.io.valid := (stage2MicroOp.bits.fuType & FunctionUnitType.FU_BRU).orR
-  bru.io.op := stage2MicroOp.bits.fuOp
-  bru.io.pc := stage2MicroOp.bits.pc
-  bru.io.offset := stage2MicroOp.bits.immediate
+  bru.io.valid := isBRUOp
+  bru.io.op := op.fuOp
+  bru.io.pc := op.pc
+  bru.io.offset := op.immediate
   bru.io.src1 := src1
   bru.io.src2 := src2
-  val mispredictedTaken = bru.io.resultPC.valid =/= stage2MicroOp.bits.branchPredictionInfo.taken
-  val mispredictedDest = bru.io.resultPC.bits =/= stage2MicroOp.bits.branchPredictionInfo.dest
+  val bruResult = bru.io.result.bits
+  val mispredictedTaken = bru.io.resultPC.valid =/= op.branchPredictionInfo.taken
+  val mispredictedDest = bru.io.resultPC.bits =/= op.branchPredictionInfo.dest
   if (hasBRU) {
-    io.branchInfo.tag := stage2MicroOp.bits.branchTag
+    io.branchInfo.tag := op.branchTag
     io.branchInfo.mispredicted := mispredictedTaken || mispredictedDest
     io.branchInfo.taken := bru.io.resultPC.valid
-    io.branchInfo.dest := stage2MicroOp.bits.branchPredictionInfo.dest
-    io.branchInfo.valid := (stage2MicroOp.bits.fuType & FunctionUnitType.FU_BRU).orR
+    io.branchInfo.dest := op.branchPredictionInfo.dest
+    io.branchInfo.valid := isBRUOp
   }
 
+  val rdWriteDataTable = Array(
+    isALUOp -> aluResult,
+    isBRUOp -> bruResult
+  )
+  val rdWriteData = Mux1H(rdWriteDataTable)
   // Output
   io.microOpIn.ready := true.B
-  io.rdWrite.valid := stage2MicroOp.valid && stage2MicroOp.bits.rdInfo.valid
-  io.rdWrite.data := Mux(hasBRU.B && bru.io.result.valid, bru.io.result.bits, aluResult)
-  io.rdWrite.addr := stage2MicroOp.bits.rdInfo.bits
+
+  io.rdWrite.valid := opValid && op.rdInfo.valid
+  io.rdWrite.data := rdWriteData
+  io.rdWrite.addr := op.rdInfo.bits
+
   // TODO: For now all FU is bypassed, modify here in the future
-  io.readyROB.valid := stage2MicroOp.valid
-  io.readyROB.bits := stage2MicroOp.bits.robIndex
+  io.readyROB.valid := opValid
+  io.readyROB.bits := op.robIndex
+
   io.readyRd.valid := io.microOpIn.valid && io.microOpIn.bits.rdInfo.valid
   io.readyRd.bits := io.microOpIn.bits.rdInfo.bits
 }

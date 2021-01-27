@@ -57,6 +57,11 @@ object Constants {
     val FU_BRU = (1 << 1).U(fuTypeWidth.W)
     val FU_MDU = (1 << 2).U(fuTypeWidth.W)
     val FU_LSU = (1 << 3).U(fuTypeWidth.W)
+
+    def typeMatch(a: UInt, b: UInt): Bool = {
+      (a & b).orR()
+    }
+
     def fuTypeCode(hasALU: Boolean = false,
                    hasBRU: Boolean = false,
                    hasMDU: Boolean = false,
