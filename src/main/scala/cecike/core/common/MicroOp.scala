@@ -3,6 +3,7 @@ package cecike.core.common
 import chisel3._
 import cecike.core.common.Constants._
 import cecike.utils._
+import chisel3.util.BitPat
 
 class ControlSignal extends Bundle {
   // TODO: Generate these signals in decode stage
@@ -16,6 +17,33 @@ class ControlSignal extends Bundle {
   val rdValid = Bool()
 
   val immediate = UInt(xLen.W)
+}
+
+object CS {
+  def apply(i: UInt, iType: UInt, fType: UInt, fOp: UInt, rs1: Bool, rs2: Bool, rd: Bool): ControlSignal = {
+    val cs = Wire(new ControlSignal)
+
+    cs.instType := iType
+    cs.fuType := fType
+    cs.fuOp := fOp
+    cs.rs1Valid := rs1
+    cs.rs2Valid := rs2
+    cs.rdValid := rd
+    cs.immediate := DontCare
+
+    cs
+  }
+
+  def immediate(i: UInt, iType: UInt): UInt = {
+    val immediateTable = Array(
+      InstructionType.I -> SignExtension(i(31, 20), xLen),
+      InstructionType.S -> SignExtension(i(31, 25) ## i(11, 7), xLen),
+      InstructionType.B -> SignExtension(i(31) ## i(7) ## i(30, 25) ## i(11, 8) ## false.B, xLen),
+      InstructionType.U -> SignExtension(i(31, 12) ## 0.U(12.W), xLen),
+      InstructionType.J -> SignExtension(i(31) ## i(19, 12) ## i(20) ## i(30, 21) ## false.B, xLen)
+    )
+    BinaryMuxLookUpDefault(iType, 0.U, immediateTable.map(p => (BitPat(p._1), p._2)))
+  }
 }
 
 class MicroOp extends Bundle {
