@@ -45,7 +45,7 @@ object Constants {
       data.U(instTypeWidth.W)
     }
 
-    def isRegToRegInstruction(data: UInt) = {
+    def needRs2Instruction(data: UInt) = {
       data === R || data === S || data === B
     }
   }

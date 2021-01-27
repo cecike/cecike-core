@@ -4,15 +4,7 @@ import chisel3._
 import cecike.core.common.Constants._
 import cecike.utils._
 
-class MicroOp extends Bundle {
-  val valid = Bool()
-  val pc = UInt(xLen.W)
-  val instruction = UInt(instructionLen.W)
-
-  // TODO: Detailed design in branch prediction
-  val branchTag = UInt(maxBranchCount.W)
-  val branchPredictionInfo = new BranchPredictionInfo
-
+class ControlSignal extends Bundle {
   // TODO: Generate these signals in decode stage
   val instType = UInt(InstructionType.instTypeWidth.W)
   val fuType = UInt(FunctionUnitType.fuTypeWidth.W)
@@ -24,7 +16,26 @@ class MicroOp extends Bundle {
   val rdValid = Bool()
 
   val immediate = UInt(xLen.W)
+}
 
+class MicroOp extends Bundle {
+  val valid = Bool()
+  val pc = UInt(xLen.W)
+  val instruction = UInt(instructionLen.W)
+
+  // TODO: Detailed design in branch prediction
+  val branchTag = UInt(maxBranchCount.W)
+  val branchPredictionInfo = new BranchPredictionInfo
+
+  val controlSignal = new ControlSignal
+
+  def instType(): UInt = controlSignal.instType
+  def fuType(): UInt = controlSignal.fuType
+  def fuOp(): UInt = controlSignal.fuOp
+  def rs1Valid(): Bool = controlSignal.rs1Valid
+  def rs2Valid(): Bool = controlSignal.rs2Valid
+  def rdValid(): Bool = controlSignal.rdValid
+  def immediate(): UInt = controlSignal.immediate
   def rs1(): UInt = Mux(valid && rs1Valid, instruction(19, 15), 0.U)
   def rs2(): UInt = Mux(valid && rs2Valid, instruction(24, 20), 0.U)
   def rd(): UInt = Mux(valid && rdValid, instruction(11, 7), 0.U)
@@ -48,8 +59,8 @@ object MicroOp {
   def apply() = {
     val microOp = WireDefault(new MicroOp, DontCare)
 
-    microOp.instType := InstructionType.X
-    microOp.fuType := FunctionUnitType.FU_ALU
+    microOp.controlSignal.instType := InstructionType.X
+    microOp.controlSignal.fuType := FunctionUnitType.FU_ALU
 
     microOp
   }

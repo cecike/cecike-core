@@ -32,7 +32,7 @@ class FunctionalUnit(hasALU: Boolean, hasBRU: Boolean) extends Module {
   io.rsRead(1).addr := io.microOpIn.bits.rs2Info.addr
 
   val src1 = RegNext(io.rsRead(0).data)
-  val src2 = RegNext(Mux(InstructionType.isRegToRegInstruction(io.microOpIn.bits.instType),
+  val src2 = RegNext(Mux(InstructionType.needRs2Instruction(io.microOpIn.bits.instType),
     io.rsRead(1).data,
     io.microOpIn.bits.immediate))
   val stage2MicroOp = Reg(UndirectionalValid(new IssueMicroOp))
