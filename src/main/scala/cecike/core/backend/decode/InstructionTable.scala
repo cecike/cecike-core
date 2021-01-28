@@ -112,7 +112,7 @@ object RvOp32InstructionTable extends CommonInstructionTable {
   }
 }
 
-object Rv64IInstructionTable extends CommonInstructionTable {
+object Rv64InstructionTable extends CommonInstructionTable {
   override def decode(i: UInt) = {
     val table = Array(
       "b01101" -> CS.ok(U, FU_ALU, ALUOp.LUI, F, F, T),
