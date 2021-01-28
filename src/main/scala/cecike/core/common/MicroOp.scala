@@ -20,7 +20,8 @@ class ControlSignal extends Bundle {
 }
 
 object CS {
-  def apply(i: UInt, iType: UInt, fType: UInt, fOp: UInt, rs1: Bool, rs2: Bool, rd: Bool): ControlSignal = {
+  // May add exception here.
+  def ok(iType: UInt, fType: UInt, fOp: UInt, rs1: Bool, rs2: Bool, rd: Bool): ControlSignal = {
     val cs = Wire(new ControlSignal)
 
     cs.instType := iType
@@ -33,6 +34,9 @@ object CS {
 
     cs
   }
+
+  def err() = ok(InstructionType.IX,
+    FunctionUnitType.FU_ALU, ALUOp.ADD, false.B, false.B, false.B)
 
   def immediate(i: UInt, iType: UInt): UInt = {
     val immediateTable = Array(
@@ -87,7 +91,7 @@ object MicroOp {
   def apply() = {
     val microOp = WireDefault(new MicroOp, DontCare)
 
-    microOp.controlSignal.instType := InstructionType.X
+    microOp.controlSignal.instType := InstructionType.IX
     microOp.controlSignal.fuType := FunctionUnitType.FU_ALU
 
     microOp

@@ -31,9 +31,14 @@ object Constants {
 
   val verboseTest = false
 
+  object TF {
+    val T = true.B
+    val F = false.B
+  }
+
   object InstructionType {
     val instTypeWidth = 3
-    val X = inst(0)
+    val IX = inst(0)
     val R = inst(1)
     val I = inst(2)
     val S = inst(3)
@@ -52,7 +57,7 @@ object Constants {
 
   object FunctionUnitType {
     val fuTypeWidth = 4
-    val FU_X = BitPat.dontCare(fuTypeWidth)
+    val FU_X = FU_ALU
     val FU_ALU = (1 << 0).U(fuTypeWidth.W)
     val FU_BRU = (1 << 1).U(fuTypeWidth.W)
     val FU_MDU = (1 << 2).U(fuTypeWidth.W)
@@ -86,9 +91,8 @@ object Constants {
   def functionUnitOpWidth = List(ALUOp.aluOpWidth, BRUOp.bruOpWidth).max
 
   object ALUOp {
-    val aluOpWidth = 4
+    val aluOpWidth = 5
 
-    val X = BitPat.dontCare(aluOpWidth)
     val ADD = op(0)
     val SUB = op(1)
     val SLT = op(2)
@@ -100,12 +104,13 @@ object Constants {
     val SRL = op(8)
     val SRA = op(9)
     val LUI = op(10)
+    val AUIPC = op(11)
 
-    val ADDW = op(11)
-    val SUBW = op(12)
-    val SLLW = op(13)
-    val SRLW = op(14)
-    val SRAW = op(15)
+    val ADDW = op(12)
+    val SUBW = op(13)
+    val SLLW = op(14)
+    val SRLW = op(15)
+    val SRAW = op(16)
 
     def op(data: Int) = {
       data.U(aluOpWidth.W)
@@ -113,9 +118,9 @@ object Constants {
   }
 
   object BRUOp {
-    val bruOpWidth = 3
+    val bruOpWidth = 4
 
-    val X = op(0)
+    val BX = op(0)
     val J = op(1)
     val EQ = op(2)
     val NE = op(3)

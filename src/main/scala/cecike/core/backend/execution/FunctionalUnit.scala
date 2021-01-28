@@ -47,6 +47,7 @@ class FunctionalUnit(hasALU: Boolean, hasBRU: Boolean) extends Module {
   val isALUOp = hasALU.B && FunctionUnitType.typeMatch(op.fuType, FunctionUnitType.FU_ALU)
   val alu = Module(new RawALU)
   alu.io.op := op.fuOp
+  alu.io.pc := op.pc
   alu.io.src1 := src1
   alu.io.src2 := src2
   val aluResult = alu.io.result

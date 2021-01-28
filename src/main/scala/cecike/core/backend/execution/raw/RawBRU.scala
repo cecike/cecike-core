@@ -20,7 +20,7 @@ class RawBRUIO extends Bundle {
 class RawBRU extends Module {
   val io = IO(new RawBRUIO)
 
-  val op = Mux(io.valid, UIntToOH(io.op), OHToUInt(BRUOp.X))
+  val op = Mux(io.valid, UIntToOH(io.op), OHToUInt(BRUOp.BX))
   val src1 = io.src1
   val src2 = io.src2
 
@@ -38,7 +38,7 @@ class RawBRU extends Module {
   val geu = !ltu
 
   val pcValidTable = Array(
-    op(BRUOp.X) -> false.B,
+    op(BRUOp.BX) -> false.B,
     op(BRUOp.J) -> true.B,
     op(BRUOp.EQ) -> eq,
     op(BRUOp.NE) -> ne,
