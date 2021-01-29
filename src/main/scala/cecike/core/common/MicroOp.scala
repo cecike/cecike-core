@@ -56,7 +56,6 @@ class MicroOp extends Bundle {
   val instruction = UInt(instructionLen.W)
 
   // TODO: Detailed design in branch prediction
-  val branchTag = UInt(maxBranchCount.W)
   val branchPredictionInfo = new BranchPredictionInfo
 
   val controlSignal = new ControlSignal
@@ -74,7 +73,8 @@ class MicroOp extends Bundle {
   def opcode(): UInt = instruction(6, 0)
   def funct3(): UInt = instruction(14, 12)
   def funct7(): UInt = instruction(31, 25)
-  
+
+  val branchTag = UInt(maxBranchCount.W)
   val orderInfo = new OrderInfo
 
   val physicalRs1 = UInt(physicalRegisterAddressWidth.W)
@@ -91,8 +91,20 @@ object MicroOp {
   def apply() = {
     val microOp = WireDefault(new MicroOp, DontCare)
 
+    microOp.valid := false.B
     microOp.controlSignal.instType := InstructionType.IX
     microOp.controlSignal.fuType := FunctionUnitType.FU_ALU
+
+    microOp
+  }
+
+  def apply(valid: Bool, pc: UInt, instruction: UInt, branchPredictionInfo: BranchPredictionInfo) = {
+    val microOp = WireDefault(new MicroOp, DontCare)
+
+    microOp.valid := valid
+    microOp.pc := pc
+    microOp.instruction := instruction
+    microOp.branchPredictionInfo := branchPredictionInfo
 
     microOp
   }
