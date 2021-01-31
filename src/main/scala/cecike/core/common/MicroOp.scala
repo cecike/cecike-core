@@ -74,7 +74,7 @@ class MicroOp extends Bundle {
   def funct3(): UInt = instruction(14, 12)
   def funct7(): UInt = instruction(31, 25)
 
-  val branchTag = UInt(maxBranchCount.W)
+  val branchTag = UInt(branchTagWidth.W)
   val orderInfo = new OrderInfo
 
   val physicalRs1 = UInt(physicalRegisterAddressWidth.W)
@@ -119,7 +119,7 @@ class IssueMicroOp extends Bundle {
   // Micro Op Info
   val pc = UInt(xLen.W)
 
-  val branchTag = UInt(maxBranchCount.W)
+  val branchTag = UInt(branchTagWidth.W)
   val branchPredictionInfo = new BranchPredictionInfo
 
   val instType = UInt(InstructionType.instTypeWidth.W)
@@ -171,7 +171,7 @@ class ROBMicroOp extends Bundle {
   // TODO: add exceptions
   val done = Bool()
 
-  val branchTag = UInt(maxBranchCount.W)
+  val branchTag = UInt(branchTagWidth.W)
   val orderInfo = new OrderInfo
 
   // To update map table

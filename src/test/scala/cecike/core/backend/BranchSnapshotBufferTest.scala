@@ -8,16 +8,13 @@ import chisel3.iotesters.{ChiselFlatSpec, Driver, PeekPokeTester}
 import cecike.core.common.Constants._
 
 class BranchSnapshotBufferSimpleTest(c: BranchSnapshotBuffer) extends PeekPokeTester(c) {
-  def IntToOH(i: Int) = {
-    1 << i
-  }
   // Simple allocate
   for (i <- 0 until decodeWidth) {
     poke(c.io.allocateReq(i), true)
   }
   expect(c.io.allocateResp.valid, true)
   for (j <- 0 until decodeWidth) {
-    expect(c.io.allocateResp.bits(j), IntToOH(j))
+    expect(c.io.allocateResp.bits(j), j)
   }
   step(4)
   expect(c.io.allocateResp.valid, false)

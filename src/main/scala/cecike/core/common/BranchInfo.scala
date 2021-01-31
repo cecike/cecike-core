@@ -11,7 +11,7 @@ class BranchPredictionInfo extends Bundle {
 class BranchInfo extends Bundle {
   val valid = Bool()
   val robIndex = UInt(robAddressWidth.W)
-  val tag = UInt(maxBranchCount.W)
+  val tag = UInt(branchTagWidth.W)
   val taken = Bool()
   val mispredicted = Bool()
   val dest = UInt(xLen.W)

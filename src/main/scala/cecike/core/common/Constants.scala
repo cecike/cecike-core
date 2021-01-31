@@ -21,6 +21,7 @@ object Constants {
   val issueClusterNum = 2
 
   val maxBranchCount = 8
+  val branchTagWidth = log2Ceil(maxBranchCount)
 
   val robBankNum = decodeWidth
   val robRowNum = 32

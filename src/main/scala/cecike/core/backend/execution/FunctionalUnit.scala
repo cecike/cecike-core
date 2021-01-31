@@ -1,6 +1,5 @@
 package cecike.core.backend.execution
 
-import cecike.core.backend.BranchSnapshotBufferReadPort
 import cecike.core.backend.execution.raw.{RawALU, RawBRU}
 import cecike.core.backend.register.{RegisterFileReadPort, RegisterFileWritePort}
 import chisel3._
