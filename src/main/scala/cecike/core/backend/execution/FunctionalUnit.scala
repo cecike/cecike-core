@@ -70,6 +70,7 @@ class FunctionalUnit(hasALU: Boolean, hasBRU: Boolean) extends Module {
     io.branchInfo.taken := bru.io.resultPC.valid
     io.branchInfo.dest := op.branchPredictionInfo.dest
     io.branchInfo.valid := isBRUOp
+    io.branchInfo.robIndex := op.robIndex
   }
 
   val rdWriteDataTable = Array(

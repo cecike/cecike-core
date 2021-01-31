@@ -93,6 +93,14 @@ class ReorderBuffer extends Module {
   val needFlush = flushMask(decodeWidth - 1) =/= bufferFlushed(bufferHead)
   io.flush := needFlush
 
+  // Store branch info
+  when (io.branchInfo.valid) {
+    val addr = io.branchInfo.robIndex
+    val row = rowAddress(addr)
+    val bank = bankAddress(addr)
+    buffer(row).microOp(bank).branchInfo.mispredicted := io.branchInfo.mispredicted
+  }
+
   // Store micro op
   io.microOpIn.ready := !bufferFull()
   when(io.microOpIn.fire()) {
@@ -100,6 +108,10 @@ class ReorderBuffer extends Module {
     buffer(bufferTail).microOp := VecInit(io.microOpIn.bits.map(ROBMicroOp(_)))
     buffer(bufferTail).basePC := io.microOpIn.bits(0).pc
     bufferTail := bufferTail + 1.U
+  } otherwise {
+    when (needFlush) {
+      bufferFlushed := (~0.U).asUInt
+    }
   }
 
   // Write ready info
