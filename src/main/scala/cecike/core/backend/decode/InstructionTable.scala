@@ -57,6 +57,39 @@ object RvBranchInstructionTable extends CommonInstructionTable {
   }
 }
 
+object RvLoadInstructionTable extends CommonInstructionTable {
+  override def decode(i: UInt) = {
+    val valid = !funct3(i).andR()
+    val cs = Wire(new ControlSignal)
+
+    cs.instType := I
+    cs.fuType := FU_LSU
+    cs.fuOp := funct3(i)
+    cs.rs1Valid := T
+    cs.rs2Valid := F
+    cs.rdValid := T
+    cs.immediate := DontCare
+
+    check(valid, cs)
+  }
+}
+
+object RvStoreInstructionTable extends CommonInstructionTable {
+  override def decode(i: UInt) = {
+    val cs = Wire(new ControlSignal)
+
+    cs.instType := S
+    cs.fuType := FU_LSU
+    cs.fuOp := true.B ## funct3(i)
+    cs.rs1Valid := T
+    cs.rs2Valid := T
+    cs.rdValid := F
+    cs.immediate := DontCare
+
+    cs
+  }
+}
+
 object RvOpInstructionTable extends CommonInstructionTable {
   import cecike.core.common.Constants.ALUOp._
 
@@ -115,11 +148,13 @@ object RvOp32InstructionTable extends CommonInstructionTable {
 object Rv64InstructionTable extends CommonInstructionTable {
   override def decode(i: UInt) = {
     val table = Array(
-      "b01101" -> CS.ok(U, FU_ALU, ALUOp.LUI, F, F, T),
-      "b00101" -> CS.ok(U, FU_ALU, ALUOp.AUIPC, F, F, T),
-      "b11000" -> RvBranchInstructionTable(i),
       "b0?100" -> RvOpInstructionTable(i),
-      "b0?110" -> RvOp32InstructionTable(i)
+      "b0?110" -> RvOp32InstructionTable(i),
+      "b11000" -> RvBranchInstructionTable(i),
+      "b00000" -> RvLoadInstructionTable(i),
+      "b01000" -> RvStoreInstructionTable(i),
+      "b01101" -> CS.ok(U, FU_ALU, ALUOp.LUI, F, F, T),
+      "b00101" -> CS.ok(U, FU_ALU, ALUOp.AUIPC, F, F, T)
     ).map(p => (BitPat(p._1), p._2))
 
     val (valid, cs) = BinaryMuxLookUp(opcode(i), table)

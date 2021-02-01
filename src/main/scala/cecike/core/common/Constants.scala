@@ -89,7 +89,7 @@ object Constants {
     }
   }
 
-  def functionUnitOpWidth = List(ALUOp.aluOpWidth, BRUOp.bruOpWidth).max
+  def functionUnitOpWidth = List(ALUOp.aluOpWidth, BRUOp.bruOpWidth, LSUOp.lsuWidth).max
 
   object ALUOp {
     val aluOpWidth = 5
@@ -132,6 +132,28 @@ object Constants {
 
     def op(data: Int) = {
       data.U(bruOpWidth.W)
+    }
+  }
+
+  object LSUOp {
+    val lsuWidth = 5
+
+    val LB = op(0)
+    val LH = op(1)
+    val LW = op(2)
+    val LD = op(3)
+    val LBU = op(4)
+    val LHU = op(5)
+    val LWU = op(6)
+
+    val SB = op(8)
+    val SH = op(9)
+    val SW = op(10)
+    val SD = op(11)
+
+
+    def op(data: Int) = {
+      data.U(lsuWidth.W)
     }
   }
 }
