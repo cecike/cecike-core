@@ -33,7 +33,7 @@ class ReorderBufferSimpleTest(c: ReorderBuffer) extends PeekPokeTester(c) {
     expect(c.io.debug.currentEntry.microOp(i).physicalRd, i + robBankNum)
   }
   // Make buffer full
-  for (i <- 1 until robRowNum - 1) {
+  for (i <- 1 until robRowNum) {
     poke(c.io.microOpIn.valid, true)
     for (j <- 0 until decodeWidth) {
       poke(c.io.microOpIn.bits(j).pc, 114514 + ((i * decodeWidth + j) << 2))

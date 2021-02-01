@@ -48,11 +48,13 @@ class ReorderBuffer extends Module {
   val bufferFlushed = RegInit(0.U(robRowNum.W))
 
   val buffer = Mem(robRowNum, new ReorderBufferEntry)
-  val bufferHead = RegInit(0.U(robRowAddressWidth.W))
-  val bufferTail = RegInit(0.U(robRowAddressWidth.W))
+  val bufferManager = Module(new RingBufferManager(robRowNum, 1, 1))
 
-  def bufferEmpty(): Bool = bufferHead === bufferTail
-  def bufferFull(): Bool = bufferTail + 1.U === bufferHead
+  val bufferHead = bufferManager.io.head
+  val bufferTail = bufferManager.io.tail
+
+  def bufferEmpty(): Bool = bufferManager.io.empty
+  def bufferFull(): Bool = bufferManager.io.full
   def currentEntry() = buffer(bufferHead)
 
   def nonEmpty[T <: Data](data: T, alt: T): T = {
@@ -81,9 +83,7 @@ class ReorderBuffer extends Module {
   }.reduce(_||_)
   val commit = nonEmpty(!dontCommit && readyToCommit, false.B)
 
-  when (commit) {
-    bufferHead := bufferHead + 1.U
-  }
+  bufferManager.io.deallocate(0) := commit
 
   val flushMask = Wire(Vec(decodeWidth, Bool()))
   flushMask(0) := bufferFlushed(bufferHead) && currentEntry().microOp(0).needFlush()
@@ -102,12 +102,13 @@ class ReorderBuffer extends Module {
   }
 
   // Store micro op
+  bufferManager.io.req.valid := true.B
+  bufferManager.io.req.bits(0) := io.microOpIn.fire()
   io.microOpIn.ready := !bufferFull()
   when(io.microOpIn.fire()) {
     bufferFlushed := Mux(needFlush, (~0.U).asUInt, bufferFlushed & (~UIntToOH(bufferTail)).asUInt)
     buffer(bufferTail).microOp := VecInit(io.microOpIn.bits.map(ROBMicroOp(_)))
     buffer(bufferTail).basePC := io.microOpIn.bits(0).pc
-    bufferTail := bufferTail + 1.U
   } otherwise {
     when (needFlush) {
       bufferFlushed := (~0.U).asUInt
