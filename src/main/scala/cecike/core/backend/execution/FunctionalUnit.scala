@@ -20,9 +20,12 @@ class FunctionalUnitIO(val hasBRU: Boolean) extends Bundle {
   val branchInfo = if (hasBRU) Output(new BranchInfo) else null
 }
 
-class FunctionalUnit(hasALU: Boolean, hasBRU: Boolean) extends Module {
+abstract class FunctionUnit(hasALU: Boolean, hasBRU: Boolean, hasMDU: Boolean, hasLSU: Boolean) extends Module {
   val io = IO(new FunctionalUnitIO(hasBRU))
+}
 
+class CommonFunctionalUnit(hasALU: Boolean, hasBRU: Boolean) extends
+  FunctionUnit(hasALU, hasBRU, false, false) {
   val microOpIn = io.microOpIn
 
   io.fuType := FunctionUnitType.fuTypeCode(hasALU, hasBRU)
