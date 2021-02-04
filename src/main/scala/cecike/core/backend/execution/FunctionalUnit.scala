@@ -21,6 +21,8 @@ class FunctionalUnitIO(val hasBRU: Boolean) extends Bundle {
 }
 
 abstract class FunctionUnit(hasALU: Boolean, hasBRU: Boolean, hasMDU: Boolean, hasLSU: Boolean) extends Module {
+  require(!(hasMDU && hasBRU))
+  require(!(hasLSU && (hasALU || hasBRU || hasMDU)))
   val io = IO(new FunctionalUnitIO(hasBRU))
 }
 
