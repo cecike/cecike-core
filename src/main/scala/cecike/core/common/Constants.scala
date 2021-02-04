@@ -58,11 +58,13 @@ object Constants {
 
   object FunctionUnitType {
     val fuTypeWidth = 4
-    val FU_X = FU_ALU
+
     val FU_ALU = (1 << 0).U(fuTypeWidth.W)
     val FU_BRU = (1 << 1).U(fuTypeWidth.W)
     val FU_MDU = (1 << 2).U(fuTypeWidth.W)
     val FU_LSU = (1 << 3).U(fuTypeWidth.W)
+
+    val FU_X = FU_ALU
 
     def typeMatch(a: UInt, b: UInt): Bool = {
       (a & b).orR()
@@ -155,5 +157,9 @@ object Constants {
     def op(data: Int) = {
       data.U(lsuWidth.W)
     }
+  }
+
+  object LSUType {
+    val byte :: half :: word :: double :: Nil = Enum(4)
   }
 }
