@@ -15,7 +15,7 @@ class LoadStoreInfo extends Bundle {
   val rdWrite = new RegisterFileWritePort
 }
 
-class FunctionalUnitIO(val hasBRU: Boolean, val hasLSU: Boolean) extends Bundle {
+class FunctionUnitIO(val hasBRU: Boolean, val hasLSU: Boolean) extends Bundle {
   val flush = Input(Bool())
   val microOpIn = Flipped(DecoupledIO(new IssueMicroOp))
   val rsRead = Vec(2, Flipped(new RegisterFileReadPort))
@@ -31,5 +31,5 @@ class FunctionalUnitIO(val hasBRU: Boolean, val hasLSU: Boolean) extends Bundle 
 abstract class FunctionUnit(hasALU: Boolean, hasBRU: Boolean, hasMDU: Boolean, hasLSU: Boolean) extends Module {
   require(!(hasMDU && hasBRU))
   require(!(hasLSU && (hasALU || hasBRU || hasMDU)))
-  val io = IO(new FunctionalUnitIO(hasBRU, hasLSU))
+  val io = IO(new FunctionUnitIO(hasBRU, hasLSU))
 }

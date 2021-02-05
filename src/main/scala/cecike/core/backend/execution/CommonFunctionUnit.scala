@@ -9,7 +9,7 @@ import cecike.core.common.Constants._
 import cecike.core.common._
 import cecike.utils._
 
-class CommonFunctionalUnit(hasALU: Boolean, hasBRU: Boolean) extends
+class CommonFunctionUnit(hasALU: Boolean, hasBRU: Boolean) extends
   FunctionUnit(hasALU, hasBRU, false, false) {
   val microOpIn = io.microOpIn
 
