@@ -6,7 +6,6 @@ import chisel3._
 import chisel3.util._
 import cecike.core.common.Constants._
 import cecike.core.common._
-import cecike.utils._
 
 class LoadStoreInfo extends Bundle {
   val aguInfo = DecoupledIO(new AGUInfo)

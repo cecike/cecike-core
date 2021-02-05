@@ -1,8 +1,6 @@
 package cecike.core.backend.execution
 
 import cecike.core.backend.execution.raw.{RawALU, RawBRU}
-import cecike.core.backend.lsu.AGUInfo
-import cecike.core.backend.register.{RegisterFileReadPort, RegisterFileWritePort}
 import chisel3._
 import chisel3.util._
 import cecike.core.common.Constants._
