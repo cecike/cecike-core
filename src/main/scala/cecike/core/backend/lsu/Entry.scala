@@ -13,6 +13,19 @@ class OpInfo extends Bundle {
   val robIndex = UInt(robAddressWidth.W)
 }
 
+object OpInfo {
+  def apply(microOpIn: IssueMicroOp) = {
+    val opInfo = Wire(new OpInfo)
+
+    opInfo.pc := microOpIn.pc
+    opInfo.branchTag := microOpIn.branchTag
+    opInfo.rdInfo := microOpIn.rdInfo
+    opInfo.robIndex := microOpIn.robIndex
+
+    opInfo
+  }
+}
+
 class Address extends Bundle {
   val address = UInt(xLen.W)
   val length = UInt(3.W)
@@ -21,6 +34,9 @@ class Address extends Bundle {
 class AGUInfo extends Bundle {
   val opInfo = new OpInfo
   val address = new Address
+  val load = Bool()
+  val data = UInt(xLen.W)
+  val signExtension = Bool()
 }
 
 class Status extends Bundle {
@@ -40,8 +56,6 @@ abstract class CommonLSUQueueEntry extends Bundle {
 }
 
 class StoreQueueEntry extends CommonLSUQueueEntry {
-  val data = UInt(xLen.W)
-
   def matched(addr: UInt): Bool = {
     require(addr.getWidth == xLen)
     pending() && addr(xLen - 1, 3) === aguInfo.address.address(xLen - 1, 3)

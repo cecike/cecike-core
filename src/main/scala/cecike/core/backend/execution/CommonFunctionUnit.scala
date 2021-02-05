@@ -23,7 +23,12 @@ class CommonFunctionUnit(hasALU: Boolean, hasBRU: Boolean) extends
     io.rsRead(1).data,
     io.microOpIn.bits.immediate))
   val stage2MicroOp = Reg(UndirectionalValid(new IssueMicroOp))
-  stage2MicroOp := microOpIn
+
+  when (reset.asBool || io.flush) {
+    stage2MicroOp.valid := false.B
+  } otherwise {
+    stage2MicroOp := microOpIn
+  }
 
   val op = stage2MicroOp.bits
   val opValid = stage2MicroOp.valid
