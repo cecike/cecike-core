@@ -85,6 +85,10 @@ class MicroOp extends Bundle {
   val oldPhysicalRd = UInt(physicalRegisterAddressWidth.W)
 
   val robIndex = UInt(robAddressWidth.W)
+
+  def isBranchInstruction: Bool = {
+    valid && fuType() === FunctionUnitType.FU_BRU
+  }
 }
 
 object MicroOp {
