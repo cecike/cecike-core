@@ -38,6 +38,8 @@ class RenameStage extends Module {
 
   // Connect signals from ROB
   freeList.io.deallocateReq := io.rdCommitDeallocateReqPort
+  freeList.io.flush := io.flush
+
   mapTable.io.rdCommitPort := io.rdCommitPort
   mapTable.io.flush := io.flush
 
@@ -50,6 +52,8 @@ class RenameStage extends Module {
   // Connects input signals
   for (i <- 0 until decodeWidth) {
     freeList.io.allocateReq(i) := rdsValid(i)
+    freeList.io.persistReq(i).valid := io.rdCommitPort(i).valid
+    freeList.io.persistReq(i).bits := io.rdCommitPort(i).physicalAddr
 
     mapTable.io.rs1ReadPort(i).logicalAddr := rs1s(i)
     mapTable.io.rs2ReadPort(i).logicalAddr := rs2s(i)
@@ -96,7 +100,7 @@ class RenameStage extends Module {
     stage1MicroOp(i).physicalRs1 := physicalRs1(i)
     stage1MicroOp(i).physicalRs2 := physicalRs2(i)
     stage1MicroOp(i).oldPhysicalRd := physicalRd(i)
-    stage1MicroOp(i).physicalRd := Mux(io.microOpIn.bits(i).rdValid, freeListResult(i), 0.U)
+    stage1MicroOp(i).physicalRd := Mux(io.microOpIn.bits(i).rdValid(), freeListResult(i), 0.U)
     stage1MicroOp(i).orderInfo := orderInfo(i)
   }
 

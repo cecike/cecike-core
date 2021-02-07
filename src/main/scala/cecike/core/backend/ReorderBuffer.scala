@@ -16,6 +16,7 @@ class ReorderBufferEntry extends Bundle {
   def pc(n: UInt = 0.U): UInt = basePC + (n << 2.U)
 }
 
+// TODO: Clear buffer on branch mispredictiong
 class ReorderBufferDebugIO extends Bundle {
   val bufferFlushed = UInt(robRowNum.W)
   val bufferHead = UInt(robRowAddressWidth.W)
