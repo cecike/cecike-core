@@ -32,7 +32,7 @@ class RingBufferManager(depth: Int, n: Int, m: Int) extends Module {
 
   val nextHead = Wire(UInt(addrWidth.W))
   val nextTail = Wire(UInt(addrWidth.W))
-  val nextValid = Wire(UInt((depth << 1).W))
+  val nextValid = Wire(UInt(depth.W))
 
   val nextEntryNumBoth = entryNum + tailOffset - headOffset
   val nextEntryNumDeallocateOnly = entryNum - headOffset
@@ -41,11 +41,12 @@ class RingBufferManager(depth: Int, n: Int, m: Int) extends Module {
 
   nextHead := head + headOffset
   nextTail := Mux(io.restore.valid, io.restore.bits, tail + tailOffset)
-  nextValid := (~((~(0.U(depth.W))) << nextEntryNum)).asUInt()(depth - 1, 0) << nextHead
+
+  nextValid := ValidMask(depth, nextHead, nextTail, nextEntryNum(addrWidth))
 
   head := nextHead
   entryNum := nextEntryNum
-  valid := nextValid((depth << 1) - 1, depth) | nextValid(depth - 1, 0)
+  valid := nextValid
 
   when (io.req.valid && reqValid) {
     tail := nextTail
