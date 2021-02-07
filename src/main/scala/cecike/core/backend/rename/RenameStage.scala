@@ -3,7 +3,7 @@ package cecike.core.backend.rename
 import chisel3._
 import chisel3.util._
 import cecike.core.common.Constants._
-import cecike.core.common.{BranchInfo, MicroOp}
+import cecike.core.common.MicroOp
 import cecike.utils._
 
 class RenameStageIO extends Bundle {
@@ -17,7 +17,6 @@ class RenameStageIO extends Bundle {
 
   val backendWritePort = Input(Vec(issueWidth, Valid(UInt(physicalRegisterAddressWidth.W))))
 
-  val branchInfo = Input(new BranchInfo)
   // Debug port
   val debug = Output(Vec(decodeWidth, new MicroOp))
 }
@@ -47,14 +46,9 @@ class RenameStage extends Module {
   val rs2s = io.microOpIn.bits.map(_.rs2())
   val rds = io.microOpIn.bits.map(_.rd())
   val rdsValid = rds.map(_.orR && !io.flush && !externalStall && io.microOpIn.valid)
-  val isBranch = io.microOpIn.bits.map { p =>
-    p.isBranchInstruction && io.microOpIn.valid
-  }
 
   // Connects input signals
-  freeList.io.branchInfo := io.branchInfo
   for (i <- 0 until decodeWidth) {
-    freeList.io.newBranch(i) := isBranch(i)
     freeList.io.allocateReq(i) := rdsValid(i)
 
     mapTable.io.rs1ReadPort(i).logicalAddr := rs1s(i)

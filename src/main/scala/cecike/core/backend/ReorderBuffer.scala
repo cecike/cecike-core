@@ -26,7 +26,6 @@ class ReorderBufferDebugIO extends Bundle {
   val commitDone = UInt(decodeWidth.W)
 }
 
-// TODO: Refactor branch mispredict reaction.
 class ReorderBufferIO extends Bundle {
   // From rename stage - store these op into ROB
   val microOpIn = Flipped(DecoupledIO(Vec(decodeWidth, new MicroOp)))
@@ -50,8 +49,6 @@ class ReorderBuffer extends Module {
 
   val buffer = Mem(robRowNum, new ReorderBufferEntry)
   val bufferManager = Module(new RingBufferManager(robRowNum, 1, 1))
-
-  bufferManager.io.restore := io.branchInfo.branchFlush
 
   val bufferHead = bufferManager.io.head
   val bufferTail = bufferManager.io.tail
