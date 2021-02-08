@@ -50,7 +50,6 @@ class ReorderBuffer extends Module {
 
   val buffer = Mem(robRowNum, new ReorderBufferEntry)
   val bufferManager = Module(new RingBufferManager(robRowNum, 1, 1))
-  bufferManager.io.clear := false.B
 
   val bufferHead = bufferManager.io.head
   val bufferTail = bufferManager.io.tail
@@ -80,20 +79,21 @@ class ReorderBuffer extends Module {
     !p.valid || p.done
   }.reverse)
   val readyToCommit = (currentEntryDone | currentEntryReady).andR()
-  val dontCommit = currentEntry().microOp.map { p =>
-    p.valid && io.branchInfo.valid && io.branchInfo.mispredicted && p.branchTag === io.branchInfo.tag
-  }.reduce(_||_)
-  val commit = nonEmpty(!dontCommit && readyToCommit, false.B)
+  val commit = nonEmpty(readyToCommit, false.B)
 
   bufferManager.io.deallocate(0) := commit
 
+  val incomeFlush = (io.branchInfo.valid &&
+    rowAddress(io.branchInfo.robIndex) === bufferHead) << bankAddress(io.branchInfo.robIndex)
+
   val flushMask = Wire(Vec(decodeWidth, Bool()))
-  flushMask(0) := bufferFlushed(bufferHead) && currentEntry().microOp(0).needFlush()
+  flushMask(0) := currentEntry().microOp(0).needFlush() || incomeFlush(0)
   for (i <- 1 until decodeWidth) {
-    flushMask(i) := flushMask(i - 1) && currentEntry().microOp(i).needFlush()
+    flushMask(i) := flushMask(i - 1) || currentEntry().microOp(i).needFlush() || incomeFlush(i)
   }
-  val needFlush = flushMask(decodeWidth - 1) =/= bufferFlushed(bufferHead)
+  val needFlush = flushMask(decodeWidth - 1)
   io.flush := needFlush
+  bufferManager.io.clear := needFlush
 
   // Store branch info
   when (io.branchInfo.valid) {
