@@ -19,6 +19,7 @@ class BranchSnapshotBuffer extends Module {
   val io = IO(new BranchSnapshotBufferIO)
 
   val manager = Module(new RingBufferManager(maxBranchCount, decodeWidth, decodeWidth))
+  manager.io.clear := false.B
   manager.io.req.bits := io.allocateReq
   manager.io.req.valid := true.B
   manager.io.deallocate := io.deallocateReq

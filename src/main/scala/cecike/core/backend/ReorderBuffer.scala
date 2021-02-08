@@ -50,6 +50,7 @@ class ReorderBuffer extends Module {
 
   val buffer = Mem(robRowNum, new ReorderBufferEntry)
   val bufferManager = Module(new RingBufferManager(robRowNum, 1, 1))
+  bufferManager.io.clear := false.B
 
   val bufferHead = bufferManager.io.head
   val bufferTail = bufferManager.io.tail

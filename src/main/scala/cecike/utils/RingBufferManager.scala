@@ -7,6 +7,7 @@ class RingBufferManagerIO(val depth: Int, val n: Int, val m: Int) extends Bundle
   val req = Flipped(Valid(Vec(n, Bool())))
   val resp = Valid(Vec(n, UInt(log2Ceil(depth).W)))
   val deallocate = Input(Vec(m, Bool()))
+  val clear = Input(Bool())
   val valid = Output(UInt(depth.W))
   val head = Output(UInt(log2Ceil(depth).W))
   val tail = Output(UInt(log2Ceil(depth).W))
@@ -35,7 +36,8 @@ class RingBufferManager(depth: Int, n: Int, m: Int) extends Module {
   val nextEntryNumBoth = entryNum + tailOffset - headOffset
   val nextEntryNumDeallocateOnly = entryNum - headOffset
   val reqValid = !nextEntryNumBoth(addrWidth) || !(nextEntryNumBoth(addrWidth - 1, 0).orR())
-  val nextEntryNum = Mux(io.req.valid && reqValid, nextEntryNumBoth, nextEntryNumDeallocateOnly)
+  val nextEntryNum = Mux(io.clear, 0.U,
+    Mux(io.req.valid && reqValid, nextEntryNumBoth, nextEntryNumDeallocateOnly))
 
   nextHead := head + headOffset
   nextTail := tail + tailOffset
@@ -45,8 +47,10 @@ class RingBufferManager(depth: Int, n: Int, m: Int) extends Module {
   entryNum := nextEntryNum
   valid := nextValid
 
-  when (io.req.valid && reqValid) {
+  when (io.req.valid && reqValid && !io.clear) {
     tail := nextTail
+  } otherwise when (io.clear) {
+    tail := nextHead
   }
 
   io.valid := valid
