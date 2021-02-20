@@ -28,7 +28,7 @@ object OpInfo {
 
 class Address extends Bundle {
   val address = UInt(xLen.W)
-  val length = UInt(3.W)
+  val length = UInt(MemorySize.memSzWidth.W)
 }
 
 class AGUInfo extends Bundle {

@@ -159,7 +159,8 @@ object Constants {
     }
   }
 
-  object LSUType {
+  object MemorySize {
+    val memSzWidth = 2
     val byte :: half :: word :: double :: Nil = Enum(4)
   }
 }
