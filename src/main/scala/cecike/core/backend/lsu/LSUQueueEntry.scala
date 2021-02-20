@@ -46,22 +46,16 @@ class Status extends Bundle {
   val exception = Bool() // Reserved for future use
 }
 
-abstract class CommonLSUQueueEntry extends Bundle {
+class LSUQueueEntry extends Bundle {
   val aguInfo = new AGUInfo
   val status = new Status
 
   def pending(): Bool = {
     status.allocated && status.valid && !status.done
   }
-}
 
-class StoreQueueEntry extends CommonLSUQueueEntry {
   def matched(addr: UInt): Bool = {
     require(addr.getWidth == xLen)
     pending() && addr(xLen - 1, 3) === aguInfo.address.address(xLen - 1, 3)
   }
-}
-
-class LoadQueueEntry extends CommonLSUQueueEntry {
-  // No more data need here.
 }
