@@ -15,12 +15,12 @@ class TLBQueryResult extends Bundle {
 // the tlb is expected to return result in
 // 1 or n cycles - and it's a blocking operation
 class TLBQueryPort extends Bundle {
-  val virtualAddress = Flipped(DecoupledIO(UInt(xLen.W)))
-  val queryResult = Valid(new TLBQueryResult)
+  val virtualAddress = DecoupledIO(UInt(xLen.W))
+  val queryResult = Flipped(Valid(new TLBQueryResult))
 }
 
 class TranslationLookasideBufferIO extends Bundle {
-  val query = new TLBQueryPort
+  val query = Flipped(new TLBQueryPort)
 }
 
 // Dummy module - will implement in the future.

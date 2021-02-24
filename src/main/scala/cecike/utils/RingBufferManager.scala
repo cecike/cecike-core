@@ -3,6 +3,12 @@ package cecike.utils
 import chisel3._
 import chisel3.util._
 
+class CommonRingBufferRequestIO(val depth: Int, val n: Int, val m: Int) extends Bundle {
+  val allocateReq = Input(Vec(n, Bool()))
+  val allocateResp = Output(Valid(Vec(n, UInt(log2Ceil(depth).W))))
+  val deallocateReq = Input(Vec(m, Bool()))
+}
+
 class RingBufferManagerIO(val depth: Int, val n: Int, val m: Int) extends Bundle {
   val req = Flipped(Valid(Vec(n, Bool())))
   val resp = Valid(Vec(n, UInt(log2Ceil(depth).W)))

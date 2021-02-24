@@ -1,18 +1,11 @@
 package cecike.core.backend.execution
 
-import cecike.core.backend.lsu.AGUInfo
+import cecike.core.backend.lsu.{AGUInfo, LoadStoreInfo}
 import cecike.core.backend.register.{RegisterFileReadPort, RegisterFileWritePort}
 import chisel3._
 import chisel3.util._
 import cecike.core.common.Constants._
 import cecike.core.common._
-
-class LoadStoreInfo extends Bundle {
-  val aguInfo = DecoupledIO(new AGUInfo)
-  val readyROB = Flipped(Valid(UInt(robAddressWidth.W)))
-  val readyRd = Flipped(Valid(UInt(physicalRegisterAddressWidth.W)))
-  val rdWrite = new RegisterFileWritePort
-}
 
 class FunctionUnitIO(val hasBRU: Boolean, val hasLSU: Boolean) extends Bundle {
   val flush = Input(Bool())

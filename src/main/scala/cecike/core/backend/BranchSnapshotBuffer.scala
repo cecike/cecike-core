@@ -5,11 +5,8 @@ import chisel3.util._
 import cecike.core.common.Constants._
 import cecike.utils._
 
-class BranchSnapshotBufferIO extends Bundle {
-  val allocateReq = Input(Vec(decodeWidth, Bool()))
-  val allocateResp = Output(Valid(Vec(decodeWidth, UInt(branchTagWidth.W))))
-  val deallocateReq = Input(Vec(decodeWidth, Bool()))
-}
+class BranchSnapshotBufferIO extends
+  CommonRingBufferRequestIO(maxBranchCount, decodeWidth, decodeWidth) {}
 
 // Allocate branch tag and store branch status
 // the branch tag uses one-hot encoding.

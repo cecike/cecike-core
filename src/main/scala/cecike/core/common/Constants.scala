@@ -30,6 +30,9 @@ object Constants {
   val robRowAddressWidth = log2Ceil(robRowNum)
   val robBankAddressWidth = log2Ceil(robBankNum)
 
+  val lsuQueueDepth = 16
+  val lsuQueueAddressWidth = log2Ceil(lsuQueueDepth)
+
   val verboseTest = false
 
   object TF {
