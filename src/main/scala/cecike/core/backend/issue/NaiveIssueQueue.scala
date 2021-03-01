@@ -3,26 +3,11 @@ package cecike.core.backend.issue
 import chisel3._
 import chisel3.util._
 import cecike.core.common.Constants._
-import cecike.core.common._
 import cecike.utils._
 
-class NaiveIssueQueue(fuNum: Int, depth: Int) extends IssueQueue(fuNum, depth) {
+class NaiveIssueQueue(fuNum: Int, depth: Int) extends IssueQueueWithCommonEntry(fuNum, depth) {
   require(fuNum > 0)
   require(depth > 0)
-
-  val queueEntries = for (_ <- 0 until depth) yield {
-    val entry = Module(new IssueQueueEntry);
-    entry
-  }
-  val queueEntriesIO = VecInit(queueEntries.map(_.io))
-
-  // Common inputs
-  queueEntriesIO.foreach { p =>
-    p.flush := io.flush
-    p.readyRdMask := io.readyRdMask
-    p.microOpIn := DontCare
-    p.select := false.B
-  }
 
   // Select logic
   val entryEmptyOH = Cat(queueEntriesIO.map(!_.valid).reverse)

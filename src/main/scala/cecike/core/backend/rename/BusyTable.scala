@@ -15,6 +15,7 @@ class BusyTableIO extends Bundle {
   val rs2ReadPort = Vec(decodeWidth, new BusyTableReadPort)
   val rdWritePort = Input(Vec(decodeWidth, Valid(UInt(physicalRegisterAddressWidth.W))))
   val backendWritePort = Input(Vec(issueWidth, Valid(UInt(physicalRegisterAddressWidth.W))))
+  val table = Output(UInt(physicalRegisterNum.W))
   val flush = Input(Bool())
 }
 
@@ -40,4 +41,5 @@ class BusyTable extends Module {
   }
 
   busyTable := Mux(io.flush, 0.U, busyTableWithBackendFeedback | rdWriteMask)
+  io.table := Mux(io.flush, 0.U, busyTableWithBackendFeedback | rdWriteMask)
 }
