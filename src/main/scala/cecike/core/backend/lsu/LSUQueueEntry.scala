@@ -8,7 +8,6 @@ import cecike.utils._
 
 class OpInfo extends Bundle {
   val pc = UInt(xLen.W)
-  val branchTag = UInt(branchTagWidth.W)
   val rdInfo = UndirectionalValid(UInt(physicalRegisterAddressWidth.W))
   val robIndex = UInt(robAddressWidth.W)
 }
@@ -18,7 +17,6 @@ object OpInfo {
     val opInfo = Wire(new OpInfo)
 
     opInfo.pc := microOpIn.pc
-    opInfo.branchTag := microOpIn.branchTag
     opInfo.rdInfo := microOpIn.rdInfo
     opInfo.robIndex := microOpIn.robIndex
 

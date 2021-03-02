@@ -55,7 +55,6 @@ class CommonFunctionUnit(hasALU: Boolean, hasBRU: Boolean) extends
   val mispredictedTaken = bru.io.resultPC.valid =/= op.branchPredictionInfo.taken
   val mispredictedDest = bru.io.resultPC.bits =/= op.branchPredictionInfo.dest
   if (hasBRU) {
-    io.branchInfo.tag := op.branchTag
     io.branchInfo.mispredicted := mispredictedTaken || mispredictedDest
     io.branchInfo.taken := bru.io.resultPC.valid
     io.branchInfo.dest := op.branchPredictionInfo.dest
