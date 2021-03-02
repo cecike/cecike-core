@@ -50,11 +50,9 @@ class MemoryFunctionUnit extends FunctionUnit(false, false, false, true) {
 
   aguInfo.bits.opInfo := OpInfo(stage2MicroOp.bits)
 
-  io.microOpIn.ready := aguInfo.valid
+  io.microOpIn.ready := aguInfo.ready
 
   io.readyRd := io.loadStoreInfo.readyRd
   io.readyROB := io.loadStoreInfo.readyROB
   io.rdWrite := io.loadStoreInfo.rdWrite
-
-  io.microOpIn.ready := io.loadStoreInfo.aguInfo.ready
 }
