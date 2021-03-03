@@ -34,6 +34,10 @@ class ReorderBufferIO extends Bundle {
   // From BRU - branch status
   val branchInfo = Input(new BranchInfo)
 
+  // From/To LSU - store commit
+  val storeCommitValid = Output(Bool())
+  val storeCommitReady = Input(Bool())
+
   val flush = Output(Bool())
   val mapTableRdCommit = Vec(decodeWidth, Flipped(new MapTableWritePort))
   val freelistCommitDeallocateReqPort = Vec(decodeWidth, Valid(UInt(physicalRegisterAddressWidth.W)))
@@ -93,6 +97,22 @@ class ReorderBuffer extends Module {
   val needFlush = flushMask(decodeWidth - 1)
   io.flush := needFlush
   bufferManager.io.clear := needFlush
+
+  // store valid
+  val previousMicroOpDone = Wire(Vec(decodeWidth, Bool()))
+  previousMicroOpDone(0) := true.B
+  for (i <- 1 until decodeWidth) {
+    previousMicroOpDone(i) := previousMicroOpDone(i - 1) && currentEntry().microOp(i).done
+  }
+
+  val storeCommitValid = Wire(Vec(decodeWidth, Bool()))
+  for (i <- 0 until decodeWidth) {
+    val mop = currentEntry().microOp(i)
+    storeCommitValid(i) := mop.valid &&
+      !mop.done && mop.isStoreOp &&
+      !flushMask(i) && previousMicroOpDone(i)
+  }
+  io.storeCommitValid := storeCommitValid.reduce(_||_) && io.storeCommitReady
 
   // Store branch info
   when (io.branchInfo.valid) {

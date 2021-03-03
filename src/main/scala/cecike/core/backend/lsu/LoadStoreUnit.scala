@@ -26,14 +26,13 @@ class LoadStoreUnitIO extends Bundle {
 class LoadStoreUnit extends Module {
   val io = IO(new LoadStoreUnitIO)
 
-  val queueManager = Module(new RingBufferManager(lsuQueueDepth, decodeWidth, decodeWidth))
-  val queue = Reg(Vec(lsuQueueDepth, new LSUQueueEntry))
-  // Init
-  when (reset.asBool()) {
-    queue.foreach { p =>
-      p.status.allocated := false.B
-    }
-  }
-
-  val dependencyMatrix = Reg(Vec(lsuQueueDepth, UInt(lsuQueueDepth.W)))
+  // TODO: ...
+  // Stage 1: take input from agu
+  // Stage 2: translate virtual address to physical address - 1 cycle at least --> FSM_A
+  // Stage 3:
+  //    For LOAD:
+  //        Access cache and store buffer(8 entry) --> FSM_B
+  //    For STORE:
+  //        Add to store buffer is not full --> FSM_C
+  //        Or block LSU to wait for a empty entry
 }

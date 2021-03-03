@@ -177,6 +177,7 @@ class ROBMicroOp extends Bundle {
   val oldPhysicalRd = UInt(physicalRegisterAddressWidth.W)
 
   // To recover from ...
+  val isStoreOp = Bool()
   val isBranchOp = Bool()
   val branchInfo = new BranchInfo
 
@@ -198,6 +199,7 @@ object ROBMicroOp extends Bundle {
     microOp.physicalRd := microOpIn.physicalRd
     microOp.oldPhysicalRd := microOpIn.oldPhysicalRd
     microOp.isBranchOp := (microOpIn.fuType & FunctionUnitType.FU_BRU).orR()
+    microOp.isStoreOp := (microOpIn.fuType & FunctionUnitType.FU_LSU).orR() && LSUOp.opIsStore(microOpIn.fuOp())
     microOp.branchInfo := DontCare
 
     microOp

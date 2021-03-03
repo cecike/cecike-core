@@ -156,6 +156,9 @@ object Constants {
     val SW = op(10)
     val SD = op(11)
 
+    def opIsStore(op: UInt) = {
+      op(3)
+    }
 
     def op(data: Int) = {
       data.U(lsuWidth.W)
