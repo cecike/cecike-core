@@ -29,7 +29,7 @@ class TranslationLookasideBuffer extends Module {
 
   io.query.virtualAddress.ready := true.B
 
-  io.query.queryResult.valid := RegNext(io.query.virtualAddress.valid)
-  io.query.queryResult.bits.valid := RegNext(io.query.virtualAddress.valid)
-  io.query.queryResult.bits.physicalAddress := RegNext(io.query.virtualAddress.bits)
+  io.query.queryResult.valid := io.query.virtualAddress.valid
+  io.query.queryResult.bits.valid := io.query.virtualAddress.valid
+  io.query.queryResult.bits.physicalAddress := io.query.virtualAddress.bits
 }

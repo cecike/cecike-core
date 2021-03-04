@@ -38,22 +38,10 @@ class AGUInfo extends Bundle {
 }
 
 class Status extends Bundle {
-  val allocated = Bool()
-  val valid = Bool()
-  val done = Bool()
   val exception = Bool() // Reserved for future use
 }
 
-class LSUQueueEntry extends Bundle {
+class LSUEntry extends Bundle {
   val aguInfo = new AGUInfo
   val status = new Status
-
-  def pending(): Bool = {
-    status.allocated && status.valid && !status.done
-  }
-
-  def matched(addr: UInt): Bool = {
-    require(addr.getWidth == xLen)
-    pending() && addr(xLen - 1, 3) === aguInfo.address.address(xLen - 1, 3)
-  }
 }
