@@ -10,7 +10,7 @@ import cecike.core.memory.tlb.TLBQueryPort
 import cecike.utils.RingBufferManager
 
 class LoadStoreInfo extends Bundle {
-  val aguInfo = DecoupledIO(new AGUInfo)
+  val aguInfo = EnqIO(new AGUInfo)
   val readyROB = Flipped(Valid(UInt(robAddressWidth.W)))
   val readyRd = Flipped(Valid(UInt(physicalRegisterAddressWidth.W)))
   val rdWrite = new RegisterFileWritePort

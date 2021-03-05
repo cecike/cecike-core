@@ -9,7 +9,7 @@ import cecike.core.common._
 
 class FunctionUnitIO(val hasBRU: Boolean, val hasLSU: Boolean) extends Bundle {
   val flush = Input(Bool())
-  val microOpIn = Flipped(DecoupledIO(new IssueMicroOp))
+  val microOpIn = DeqIO(new IssueMicroOp)
   val rsRead = Vec(2, Flipped(new RegisterFileReadPort))
 
   val fuType = Output(UInt(FunctionUnitType.fuTypeWidth.W))

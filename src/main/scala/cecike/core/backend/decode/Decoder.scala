@@ -7,8 +7,8 @@ import cecike.core.common.{CS, MicroOp}
 import cecike.utils._
 
 class DecoderIO extends Bundle {
-  val microOpIn = Flipped(DecoupledIO(Vec(decodeWidth, new MicroOp)))
-  val microOpOut = DecoupledIO(Vec(decodeWidth, new MicroOp))
+  val microOpIn = DeqIO(Vec(decodeWidth, new MicroOp))
+  val microOpOut = EnqIO(Vec(decodeWidth, new MicroOp))
 }
 
 class Decoder extends Module {

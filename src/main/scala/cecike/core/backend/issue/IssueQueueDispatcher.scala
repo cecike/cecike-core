@@ -7,9 +7,9 @@ import cecike.core.common.IssueMicroOp
 import cecike.utils._
 
 class IssueQueueDispatcherIO extends Bundle {
-  val microOpIn = Flipped(DecoupledIO(Vec(decodeWidth, Valid(new IssueMicroOp))))
+  val microOpIn = DeqIO(Vec(decodeWidth, Valid(new IssueMicroOp)))
   val acceptFuTypes = Input(Vec(issueClusterNum, UInt(FunctionUnitType.fuTypeWidth.W)))
-  val microOpOut = Vec(issueClusterNum, DecoupledIO(Vec(decodeWidth, Valid(new IssueMicroOp))))
+  val microOpOut = Vec(issueClusterNum, EnqIO(Vec(decodeWidth, Valid(new IssueMicroOp))))
 }
 
 class IssueQueueDispatcher extends Module {

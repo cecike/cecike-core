@@ -28,7 +28,7 @@ class ReorderBufferDebugIO extends Bundle {
 
 class ReorderBufferIO extends Bundle {
   // From rename stage - store these op into ROB
-  val microOpIn = Flipped(DecoupledIO(Vec(decodeWidth, new MicroOp)))
+  val microOpIn = DeqIO(Vec(decodeWidth, new MicroOp))
   // From FU - rob sub-entry ready info
   val robReady = Vec(issueWidth, Flipped(Valid(UInt(robAddressWidth.W))))
   // From BRU - branch status

@@ -7,7 +7,7 @@ import cecike.core.common._
 import cecike.utils._
 
 class IssueQueueIO(val fuNum: Int) extends Bundle {
-  val microOpIn = Flipped(DecoupledIO(Vec(decodeWidth, Valid(new IssueMicroOp))))
+  val microOpIn = DeqIO(Vec(decodeWidth, Valid(new IssueMicroOp)))
   val readyRdMask = Input(UInt(physicalRegisterNum.W))
   val flush = Input(Bool())
   val fuTypes = Input(Vec(fuNum, UInt(FunctionUnitType.fuTypeWidth.W)))

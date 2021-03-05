@@ -14,9 +14,9 @@ class VirtualAddressTranslateFSMDebugIO extends Bundle {
 }
 
 class VirtualAddressTranslateFSMIO extends Bundle {
-  val agu = Flipped(DecoupledIO(new AGUInfo))
+  val agu = DeqIO(new AGUInfo)
   val tlb = new TLBQueryPort
-  val res = DecoupledIO(new LSUEntry)
+  val res = EnqIO(new LSUEntry)
   val debug = Output(new VirtualAddressTranslateFSMDebugIO)
 }
 
@@ -100,7 +100,7 @@ class VirtualAddressTranslateFSM extends Module {
 
   io.agu.ready := eatNewAGU
 
-  when (eatNewAGU && io.agu.valid) {
+  when (io.agu.fire) {
     lsuEntry.aguInfo := io.agu.bits
     lsuEntry.status.exception := false.B
   } otherwise when (storeAddress) {

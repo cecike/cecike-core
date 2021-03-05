@@ -17,10 +17,10 @@ class StoreInfo extends Bundle {
 }
 
 class MemoryReadPort extends Bundle {
-  val addressInfo = DecoupledIO(new AddressInfo)
-  val data = Flipped(DecoupledIO(UInt(xLen.W)))
+  val addressInfo = EnqIO(new AddressInfo)
+  val data = DeqIO(UInt(xLen.W))
 }
 
 class MemoryWritePort extends Bundle {
-  val storeInfo = DecoupledIO(new StoreInfo)
+  val storeInfo = EnqIO(new StoreInfo)
 }
