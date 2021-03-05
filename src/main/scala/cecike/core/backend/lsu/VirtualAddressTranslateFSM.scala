@@ -8,10 +8,16 @@ import cecike.core.memory.{MemoryReadPort, MemoryWritePort}
 import cecike.core.memory.tlb.TLBQueryPort
 import cecike.utils.RingBufferManager
 
+class VirtualAddressTranslateFSMDebugIO extends Bundle {
+  val state = UInt(2.W)
+  val nextState = UInt(2.W)
+}
+
 class VirtualAddressTranslateFSMIO extends Bundle {
   val agu = Flipped(DecoupledIO(new AGUInfo))
   val tlb = new TLBQueryPort
   val res = DecoupledIO(new LSUEntry)
+  val debug = Output(new VirtualAddressTranslateFSMDebugIO)
 }
 
 class VirtualAddressTranslateFSM extends Module {
@@ -34,6 +40,7 @@ class VirtualAddressTranslateFSM extends Module {
   val nextState = WireDefault(s_idle)
   val eatNewAGU = WireDefault(false.B)
   val storeAddress = WireDefault(false.B)
+
   switch(state) {
     is(s_idle) {
       eat()
@@ -48,8 +55,9 @@ class VirtualAddressTranslateFSM extends Module {
 
       when (io.tlb.virtualAddress.ready) {
         setStateWhenWait()
+      } otherwise {
+        nextState := s_shake
       }
-      nextState := s_shake
     }
 
     is(s_wait) {
@@ -73,18 +81,21 @@ class VirtualAddressTranslateFSM extends Module {
       eat()
       when (io.agu.valid) {
         nextState := s_shake
+      } otherwise {
+        nextState := s_idle
       }
-      nextState := s_idle
+    } otherwise {
+      nextState := s_send
     }
-    nextState := s_send
   }
 
   def setStateWhenWait() = {
     when (io.tlb.queryResult.valid) {
       storeAddress := true.B
       setStateWhenSend()
+    } otherwise {
+      nextState := s_wait
     }
-    nextState := s_wait
   }
 
   io.agu.ready := eatNewAGU
@@ -106,4 +117,7 @@ class VirtualAddressTranslateFSM extends Module {
   }
   io.res.bits := result
 
+  // debug
+  io.debug.state := state
+  io.debug.nextState := nextState
 }

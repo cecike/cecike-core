@@ -28,7 +28,7 @@ class LoadStoreUnit extends Module {
 
   // TODO: ...
   // Stage 1: take input from agu
-  // Stage 2: translate virtual address to physical address - 1 cycle at least --> FSM_A
+  // Stage 2: translate virtual address to physical address - 1 cycle at least --> FSM_A // Done
   // Stage 3:
   //    For LOAD:
   //        Access cache and store buffer(8 entry) --> FSM_B
