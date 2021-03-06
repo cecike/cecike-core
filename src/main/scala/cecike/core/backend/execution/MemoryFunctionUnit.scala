@@ -46,7 +46,7 @@ class MemoryFunctionUnit extends FunctionUnit(false, false, false, true) {
   aguInfo.bits.signExtension := signExtension
 
   aguInfo.bits.address.address := address
-  aguInfo.bits.address.length := length
+  aguInfo.bits.address.size := length
 
   aguInfo.bits.opInfo := OpInfo(stage2MicroOp.bits)
 

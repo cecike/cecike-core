@@ -21,6 +21,7 @@ class LoadStoreUnitIO extends Bundle {
   val tlb = new TLBQueryPort
   val memoryRead = new MemoryReadPort
   val memoryWrite = new MemoryWritePort
+  val storeCommit = Input(Bool())
 }
 
 class LoadStoreUnit extends Module {
@@ -31,8 +32,9 @@ class LoadStoreUnit extends Module {
   // Stage 2: translate virtual address to physical address - 1 cycle at least --> FSM_A // Done
   // Stage 3:
   //    For LOAD:
-  //        Access cache and store buffer(8 entry) --> FSM_B
+  //        Access cache and store buffer(8 entry) --> FSM_B // Done
   //    For STORE:
   //        Add to store buffer is not full --> FSM_C
   //        Or block LSU to wait for a empty entry
+  // Load has a higher priority
 }

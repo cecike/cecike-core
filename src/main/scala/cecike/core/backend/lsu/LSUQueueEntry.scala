@@ -24,14 +24,14 @@ object OpInfo {
   }
 }
 
-class Address extends Bundle {
+class AddressInfo extends Bundle {
   val address = UInt(xLen.W)
-  val length = UInt(MemorySize.memSzWidth.W)
+  val size = UInt(MemorySize.memSzWidth.W)
 }
 
 class AGUInfo extends Bundle {
   val opInfo = new OpInfo
-  val address = new Address
+  val address = new AddressInfo
   val load = Bool()
   val data = UInt(xLen.W)
   val signExtension = Bool()

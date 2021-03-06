@@ -1,15 +1,11 @@
 package cecike.core.memory
 
+import cecike.core.backend.lsu.AddressInfo
 import chisel3._
 import chisel3.util._
 import cecike.core.common.Constants._
 import cecike.core.common._
 import cecike.utils._
-
-class AddressInfo extends Bundle {
-  val address = UInt(xLen.W)
-  val size = UInt(MemorySize.memSzWidth.W)
-}
 
 class StoreInfo extends Bundle {
   val addressInfo = new AddressInfo
