@@ -33,6 +33,9 @@ object Constants {
   val lsuQueueDepth = 16
   val lsuQueueAddressWidth = log2Ceil(lsuQueueDepth)
 
+  val storeBufferDepth = 8
+  val storeBufferAddressWidth = log2Ceil(storeBufferDepth)
+
   val verboseTest = false
 
   object TF {

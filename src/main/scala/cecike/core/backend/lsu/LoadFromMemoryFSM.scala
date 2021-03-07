@@ -9,11 +9,6 @@ import cecike.core.memory.{MemoryReadPort, MemoryWritePort}
 import cecike.core.memory.tlb.TLBQueryPort
 import cecike.utils.RingBufferManager
 
-class StoreBufferCheckExistencePort extends Bundle {
-  val address = Output(UInt(xLen.W))
-  val exist = Input(Bool())
-}
-
 class LoadFromMemoryFSMIO extends Bundle {
   val lsuEntry = DeqIO(new LSUEntry)
 
