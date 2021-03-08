@@ -97,19 +97,19 @@ class LoadFromMemoryFSM extends Module {
   }
 
   def shakeFromInput(): Unit = {
-    io.memoryRead.addressInfo.valid := true.B
+    io.memoryRead.addressInfo.valid := !io.storeBuffer.exist
     io.memoryRead.addressInfo.bits := io.lsuEntry.bits.aguInfo.address
     io.storeBuffer.address := io.lsuEntry.bits.aguInfo.address.address
   }
 
   def shakeFromRegister(): Unit = {
-    io.memoryRead.addressInfo.valid := true.B
+    io.memoryRead.addressInfo.valid := !io.storeBuffer.exist
     io.memoryRead.addressInfo.bits := lsuEntry.aguInfo.address
     io.storeBuffer.address := lsuEntry.aguInfo.address.address
   }
 
   def shakeNextState(): Unit = {
-    when (io.memoryRead.addressInfo.fire() && !io.storeBuffer.exist) {
+    when (io.memoryRead.addressInfo.fire()) {
       nextState := s_wait
     } otherwise {
       nextState := s_shake
