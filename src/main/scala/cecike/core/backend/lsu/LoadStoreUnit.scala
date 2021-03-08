@@ -37,4 +37,39 @@ class LoadStoreUnit extends Module {
   //        Add to store buffer is not full --> FSM_C
   //        Or block LSU to wait for a empty entry
   // Load has a higher priority
+  val addressTranslateFSM = Module(new VirtualAddressTranslateFSM)
+  addressTranslateFSM.io.agu <> io.agu.aguInfo
+  addressTranslateFSM.io.tlb <> io.tlb
+
+  val storeBuffer = Module(new StoreBuffer)
+  val loadFromMemoryFSM = Module(new LoadFromMemoryFSM)
+
+  loadFromMemoryFSM.io.lsuEntry.bits := addressTranslateFSM.io.res.bits
+  storeBuffer.io.lsuEntry.bits := addressTranslateFSM.io.res.bits
+
+  loadFromMemoryFSM.io.lsuEntry.valid := false.B
+  storeBuffer.io.lsuEntry.valid := false.B
+  when (addressTranslateFSM.io.res.bits.aguInfo.load) {
+    loadFromMemoryFSM.io.lsuEntry.valid := addressTranslateFSM.io.res.valid
+    addressTranslateFSM.io.res.ready := loadFromMemoryFSM.io.lsuEntry.ready
+  } otherwise {
+    storeBuffer.io.lsuEntry.valid := addressTranslateFSM.io.res.valid
+    addressTranslateFSM.io.res.ready := storeBuffer.io.lsuEntry.ready
+  }
+
+  storeBuffer.io.ableToCommit := !loadFromMemoryFSM.io.readyROB.valid
+  storeBuffer.io.storeCommit := io.storeCommit
+  storeBuffer.io.storeInfo <> io.memoryWrite.storeInfo
+
+  when (loadFromMemoryFSM.io.readyROB.valid) {
+    io.agu.readyROB := loadFromMemoryFSM.io.readyROB
+  } otherwise {
+    io.agu.readyROB := storeBuffer.io.readyROB
+  }
+
+  loadFromMemoryFSM.io.memoryRead <> io.memoryRead
+  loadFromMemoryFSM.io.storeBuffer <> storeBuffer.io.existencePort
+
+  io.agu.readyRd := loadFromMemoryFSM.io.readyRd
+  io.agu.rdWrite := loadFromMemoryFSM.io.rdWrite
 }
