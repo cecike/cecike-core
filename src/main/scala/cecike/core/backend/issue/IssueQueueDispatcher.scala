@@ -3,13 +3,15 @@ package cecike.core.backend.issue
 import chisel3._
 import chisel3.util._
 import cecike.core.common.Constants._
-import cecike.core.common.IssueMicroOp
+import cecike.core.common.{IssueMicroOp, MicroOp}
 import cecike.utils._
 
 class IssueQueueDispatcherIO extends Bundle {
-  val microOpIn = DeqIO(Vec(decodeWidth, Valid(new IssueMicroOp)))
+  val microOpIn = DeqIO(Vec(decodeWidth, new MicroOp))
   val acceptFuTypes = Input(Vec(issueClusterNum, UInt(FunctionUnitType.fuTypeWidth.W)))
   val microOpOut = Vec(issueClusterNum, EnqIO(Vec(decodeWidth, Valid(new IssueMicroOp))))
+  val currentROBAddressBase = Input(UInt(robAddressWidth.W))
+  val robMicroOpOut = EnqIO(Vec(decodeWidth, new MicroOp))
 }
 
 class IssueQueueDispatcher extends Module {
@@ -19,15 +21,19 @@ class IssueQueueDispatcher extends Module {
 
   for (i <- 0 until issueClusterNum) {
     val t = Wire(Vec(decodeWidth, Valid(new IssueMicroOp)))
-    t := io.microOpIn.bits
+    //t := io.microOpIn.bits
     for (j <- 0 until decodeWidth) {
+      t(j).bits := IssueMicroOp(io.microOpIn.bits(j))
+      t(j).bits.robIndex := io.currentROBAddressBase + j.U
       t(j).valid := (t(j).bits.fuType & io.acceptFuTypes(i)).orR() &&
         io.microOpIn.bits(j).valid
     }
     io.microOpOut(i).bits := t
   }
+  io.robMicroOpOut.bits := io.microOpIn.bits
+  io.robMicroOpOut.valid := io.microOpIn.valid
 
-  val ready = io.microOpOut.map(_.ready).reduce(_&&_)
+  val ready = io.microOpOut.map(_.ready).reduce(_&&_) && io.robMicroOpOut.ready
   io.microOpIn.ready := ready
   io.microOpOut.foreach(_.valid := ready)
 }

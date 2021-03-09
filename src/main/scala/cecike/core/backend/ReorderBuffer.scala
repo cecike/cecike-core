@@ -29,14 +29,14 @@ class ReorderBufferDebugIO extends Bundle {
 class ReorderBufferIO extends Bundle {
   // From rename stage - store these op into ROB
   val microOpIn = DeqIO(Vec(decodeWidth, new MicroOp))
+  val currentAddressBase = Output(UInt(robAddressWidth.W))
   // From FU - rob sub-entry ready info
   val robReady = Vec(issueWidth, Flipped(Valid(UInt(robAddressWidth.W))))
   // From BRU - branch status
   val branchInfo = Input(new BranchInfo)
 
   // From/To LSU - store commit
-  val storeCommitValid = Output(Bool())
-  val storeCommitReady = Input(Bool())
+  val storeCommit = Output(Bool())
 
   val flush = Output(Bool())
   val mapTableRdCommit = Vec(decodeWidth, Flipped(new MapTableWritePort))
@@ -112,7 +112,7 @@ class ReorderBuffer extends Module {
       !mop.done && mop.isStoreOp &&
       !flushMask(i) && previousMicroOpDone(i)
   }
-  io.storeCommitValid := storeCommitValid.reduce(_||_) && io.storeCommitReady
+  io.storeCommit := storeCommitValid.reduce(_||_)
 
   // Store branch info
   when (io.branchInfo.valid) {
@@ -163,6 +163,8 @@ class ReorderBuffer extends Module {
     io.mapTableRdCommit(i).logicalAddr := currentEntry().microOp(i).logicalRd
     io.mapTableRdCommit(i).physicalAddr := currentEntry().microOp(i).physicalRd
   }
+
+  io.currentAddressBase := bufferTail << robBankAddressWidth
 
   // Debug signals
   io.debug.bufferFlushed := bufferFlushed

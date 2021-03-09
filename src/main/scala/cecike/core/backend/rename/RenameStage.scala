@@ -10,6 +10,7 @@ class RenameStageIO extends Bundle {
   val microOpIn = Flipped(DecoupledIO(Vec(decodeWidth, new MicroOp)))
   val microOpOut = DecoupledIO(Vec(decodeWidth, new MicroOp))
 
+  val table = Output(UInt(physicalRegisterNum.W))
   // TODO: Inputs from ROB and compute units
   val flush = Input(Bool())
   val rdCommitPort = Vec(decodeWidth, new MapTableWritePort)
@@ -169,4 +170,6 @@ class RenameStage extends Module {
   // Generate output
   io.microOpOut.valid := outputValid && !io.flush
   io.microOpOut.bits := stage2MicroOp
+
+  io.table := busyTable.io.table
 }

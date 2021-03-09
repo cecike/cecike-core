@@ -14,7 +14,7 @@ class IssueQueueIO(val fuNum: Int) extends Bundle {
   val busyTable = Input(UInt(physicalRegisterNum.W))
 
   val acceptFuTypes = Output(UInt(FunctionUnitType.fuTypeWidth.W))
-  val microOpOut = Output(Vec(fuNum, DecoupledIO(new IssueMicroOp)))
+  val microOpOut = Vec(fuNum, EnqIO(new IssueMicroOp))
 }
 
 abstract class IssueQueue(fuNum: Int, depth: Int) extends Module {

@@ -16,7 +16,10 @@ object Constants {
   val physicalRegisterAddressWidth = log2Ceil(physicalRegisterNum)
 
   val decodeWidth = 2
-  val issueWidth = 3
+
+  val commonIssueWidth = 2
+  val lsuIssueWidth = 1
+  val issueWidth = commonIssueWidth + lsuIssueWidth
 
   val issueClusterNum = 2
 
@@ -29,6 +32,8 @@ object Constants {
   val robAddressWidth = log2Ceil(robEntryNum)
   val robRowAddressWidth = log2Ceil(robRowNum)
   val robBankAddressWidth = log2Ceil(robBankNum)
+
+  val commonQueueDepth = 16
 
   val lsuQueueDepth = 16
   val lsuQueueAddressWidth = log2Ceil(lsuQueueDepth)
