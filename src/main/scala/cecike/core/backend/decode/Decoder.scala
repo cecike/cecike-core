@@ -7,6 +7,7 @@ import cecike.core.common.{CS, MicroOp}
 import cecike.utils._
 
 class DecoderIO extends Bundle {
+  val flush = Input(Bool())
   val microOpIn = DeqIO(Vec(decodeWidth, new MicroOp))
   val microOpOut = EnqIO(Vec(decodeWidth, new MicroOp))
 }
@@ -14,13 +15,27 @@ class DecoderIO extends Bundle {
 class Decoder extends Module {
   val io = IO(new DecoderIO)
 
-  io.microOpIn.ready := io.microOpOut.ready
-  io.microOpOut.valid := io.microOpIn.valid
+  val microOpRegValid = RegInit(false.B)
+  val microOpReg = Reg(Vec(decodeWidth, new MicroOp))
 
+  val decodedMicroOp = WireDefault(io.microOpIn.bits)
   for (i <- 0 until decodeWidth) {
-    io.microOpOut.bits(i) := io.microOpIn.bits(i)
-    io.microOpOut.bits(i).controlSignal := Rv64InstructionTable(io.microOpIn.bits(i).instruction)
-    io.microOpOut.bits(i).controlSignal.immediate := CS.immediate(io.microOpIn.bits(i).instruction,
-      io.microOpOut.bits(i).controlSignal.instType)
+    decodedMicroOp(i).controlSignal := Rv64InstructionTable(io.microOpIn.bits(i).instruction)
+    decodedMicroOp(i).controlSignal.immediate := CS.immediate(io.microOpIn.bits(i).instruction,
+      decodedMicroOp(i).controlSignal.instType)
   }
+
+  io.microOpIn.ready := false.B
+  when (io.flush) {
+    microOpRegValid := false.B
+  } otherwise {
+    when (!microOpRegValid || io.microOpOut.fire()) {
+      io.microOpIn.ready := true.B
+      microOpReg := io.microOpIn.bits
+      microOpRegValid := io.microOpIn.fire()
+    }
+  }
+
+  io.microOpOut.bits := microOpReg
+  io.microOpOut.valid := microOpRegValid && !io.flush
 }
