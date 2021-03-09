@@ -40,7 +40,7 @@ class MemoryFunctionUnit extends FunctionUnit(false, false, false, true) {
   val address = rs1 + stage2MicroOp.bits.immediate
 
   val aguInfo = io.loadStoreInfo.aguInfo
-  aguInfo.valid := opValid
+  aguInfo.valid := opValid && !io.flush
   aguInfo.bits.data := rs2
   aguInfo.bits.load := load
   aguInfo.bits.signExtension := signExtension

@@ -18,6 +18,7 @@ class LoadStoreInfo extends Bundle {
 
 class LoadStoreUnitIO extends Bundle {
   val agu = Flipped(new LoadStoreInfo)
+  val flush = Input(Bool())
   val tlb = new TLBQueryPort
   val memoryRead = new MemoryReadPort
   val memoryWrite = new MemoryWritePort
@@ -33,16 +34,20 @@ class LoadStoreUnit extends Module {
   // Stage 3:
   //    For LOAD:
   //        Access cache and store buffer(8 entry) --> FSM_B // Done
-  //    For STORE:
+  //    For STORE:g
   //        Add to store buffer is not full --> FSM_C
   //        Or block LSU to wait for a empty entry
   // Load has a higher priority
   val addressTranslateFSM = Module(new VirtualAddressTranslateFSM)
+  addressTranslateFSM.io.flush := io.flush
   addressTranslateFSM.io.agu <> io.agu.aguInfo
   addressTranslateFSM.io.tlb <> io.tlb
 
   val storeBuffer = Module(new StoreBuffer)
   val loadFromMemoryFSM = Module(new LoadFromMemoryFSM)
+
+  storeBuffer.io.flush := io.flush
+  loadFromMemoryFSM.io.flush := io.flush
 
   loadFromMemoryFSM.io.lsuEntry.bits := addressTranslateFSM.io.res.bits
   storeBuffer.io.lsuEntry.bits := addressTranslateFSM.io.res.bits

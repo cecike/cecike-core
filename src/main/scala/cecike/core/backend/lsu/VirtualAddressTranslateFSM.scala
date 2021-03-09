@@ -15,6 +15,7 @@ class VirtualAddressTranslateFSMDebugIO extends Bundle {
 
 class VirtualAddressTranslateFSMIO extends Bundle {
   val agu = DeqIO(new AGUInfo)
+  val flush = Input(Bool())
   val tlb = new TLBQueryPort
   val res = EnqIO(new LSUEntry)
   val debug = Output(new VirtualAddressTranslateFSMDebugIO)
@@ -33,7 +34,7 @@ class VirtualAddressTranslateFSM extends Module {
   val lsuEntry = Reg(new LSUEntry)
 
   // state
-  val s_idle :: s_shake :: s_wait :: s_send :: Nil = Enum(4)
+  val s_idle :: s_shake :: s_wait :: s_send :: s_flush :: Nil = Enum(5)
   val state = RegInit(s_idle)
 
   // next state
@@ -44,19 +45,23 @@ class VirtualAddressTranslateFSM extends Module {
   switch(state) {
     is(s_idle) {
       eat()
-      when (io.agu.valid) {
+      when (io.agu.fire()) {
         nextState := s_shake
       }
     }
 
     is(s_shake) {
-      io.tlb.virtualAddress.valid := true.B
+      io.tlb.virtualAddress.valid := !io.flush
       io.tlb.virtualAddress.bits := lsuEntry.aguInfo.address.address
 
-      when (io.tlb.virtualAddress.ready) {
+      when (io.tlb.virtualAddress.fire()) {
         setStateWhenWait()
       } otherwise {
-        nextState := s_shake
+        when (io.flush) {
+          nextState := s_idle
+        } otherwise {
+          nextState := s_shake
+        }
       }
     }
 
@@ -67,25 +72,37 @@ class VirtualAddressTranslateFSM extends Module {
     is(s_send) {
       setStateWhenSend()
     }
+
+    is(s_flush) {
+      when (io.tlb.queryResult.valid) {
+        nextState := s_idle
+      } otherwise {
+        nextState := s_flush
+      }
+    }
   }
   state := nextState
 
   def eat() = {
-    eatNewAGU := true.B
+    eatNewAGU := !io.flush
   }
 
   def setStateWhenSend() = {
-    io.res.valid := true.B
+    io.res.valid := !io.flush
 
-    when (io.res.ready) {
-      eat()
-      when (io.agu.valid) {
-        nextState := s_shake
-      } otherwise {
-        nextState := s_idle
-      }
+    when (io.flush) {
+      nextState := s_idle
     } otherwise {
-      nextState := s_send
+      when (io.res.fire()) {
+        eat()
+        when (io.agu.valid) {
+          nextState := s_shake
+        } otherwise {
+          nextState := s_idle
+        }
+      } otherwise {
+        nextState := s_send
+      }
     }
   }
 
@@ -94,7 +111,11 @@ class VirtualAddressTranslateFSM extends Module {
       storeAddress := true.B
       setStateWhenSend()
     } otherwise {
-      nextState := s_wait
+      when (io.flush) {
+        nextState := s_flush
+      } otherwise {
+        nextState := s_wait
+      }
     }
   }
 
@@ -111,6 +132,7 @@ class VirtualAddressTranslateFSM extends Module {
   // Output
   val result = Wire(new LSUEntry)
   result := lsuEntry
+
   when (storeAddress) {
     result.aguInfo.address.address := io.tlb.queryResult.bits.physicalAddress
     result.status.exception := !io.tlb.queryResult.bits.valid

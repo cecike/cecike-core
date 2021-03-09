@@ -26,7 +26,7 @@ class NaiveIssueQueue(fuNum: Int, depth: Int) extends IssueQueueWithCommonEntry(
 
   for (i <- 0 until fuNum) {
     val entry = entryReady._1(i)
-    io.microOpOut(i).valid := entry.valid
+    io.microOpOut(i).valid := entry.valid && !io.flush
     io.microOpOut(i).bits := queueEntriesIO(entry.bits).microOpOut
     queueEntriesIO(entry.bits).select := io.microOpOut(i).fire
   }

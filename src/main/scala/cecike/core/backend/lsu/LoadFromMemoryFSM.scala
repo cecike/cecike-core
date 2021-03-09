@@ -12,6 +12,7 @@ import cecike.utils.RingBufferManager
 class LoadFromMemoryFSMIO extends Bundle {
   val lsuEntry = DeqIO(new LSUEntry)
 
+  val flush = Input(Bool())
   val storeBuffer = new StoreBufferCheckExistencePort
   val memoryRead = new MemoryReadPort
 
@@ -46,7 +47,7 @@ class LoadFromMemoryFSM extends Module {
   // to store info
   val lsuEntry = Reg(new LSUEntry)
 
-  val s_idle :: s_shake :: s_wait :: Nil = Enum(3)
+  val s_idle :: s_shake :: s_wait :: s_flush :: Nil = Enum(4)
 
   val state = RegInit(s_idle)
 
@@ -87,32 +88,49 @@ class LoadFromMemoryFSM extends Module {
           nextState := s_idle
         }
       } otherwise {
-        nextState := s_wait
+        when (io.flush) {
+          nextState := s_flush
+        } otherwise {
+          nextState := s_wait
+        }
+      }
+    }
+
+    is(s_flush) {
+      io.memoryRead.data.ready := true.B
+      when (io.memoryRead.data.fire()) {
+        nextState := s_idle
+      } otherwise {
+        nextState := s_flush
       }
     }
   }
 
   def eat(): Unit = {
-    io.lsuEntry.ready := true.B
+    io.lsuEntry.ready := !io.flush
   }
 
   def shakeFromInput(): Unit = {
-    io.memoryRead.addressInfo.valid := !io.storeBuffer.exist
+    io.memoryRead.addressInfo.valid := !io.storeBuffer.exist && !io.flush
     io.memoryRead.addressInfo.bits := io.lsuEntry.bits.aguInfo.address
     io.storeBuffer.address := io.lsuEntry.bits.aguInfo.address.address
   }
 
   def shakeFromRegister(): Unit = {
-    io.memoryRead.addressInfo.valid := !io.storeBuffer.exist
+    io.memoryRead.addressInfo.valid := !io.storeBuffer.exist && !io.flush
     io.memoryRead.addressInfo.bits := lsuEntry.aguInfo.address
     io.storeBuffer.address := lsuEntry.aguInfo.address.address
   }
 
   def shakeNextState(): Unit = {
-    when (io.memoryRead.addressInfo.fire()) {
-      nextState := s_wait
+    when (io.flush) {
+      nextState := s_idle
     } otherwise {
-      nextState := s_shake
+      when (io.memoryRead.addressInfo.fire()) {
+        nextState := s_wait
+      } otherwise {
+        nextState := s_shake
+      }
     }
   }
 }
