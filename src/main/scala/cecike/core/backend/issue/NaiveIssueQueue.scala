@@ -3,11 +3,20 @@ package cecike.core.backend.issue
 import chisel3._
 import chisel3.util._
 import cecike.core.common.Constants._
+import cecike.core.common.IssueMicroOp
 import cecike.utils._
 
 class NaiveIssueQueue(fuNum: Int, depth: Int) extends IssueQueueWithCommonEntry(fuNum, depth) {
   require(fuNum > 0)
   require(depth > 0)
+
+  // Pipeline buffer
+  val microOpOutReg = Reg(Vec(fuNum, Valid(new IssueMicroOp)))
+
+  for (i <- 0 until fuNum) {
+    io.microOpOut(i).valid := microOpOutReg(i).valid && !io.flush
+    io.microOpOut(i).bits := microOpOutReg(i).bits
+  }
 
   // Select logic
   val entryEmptyOH = Cat(queueEntriesIO.map(!_.valid).reverse)
@@ -26,8 +35,13 @@ class NaiveIssueQueue(fuNum: Int, depth: Int) extends IssueQueueWithCommonEntry(
 
   for (i <- 0 until fuNum) {
     val entry = entryReady._1(i)
-    io.microOpOut(i).valid := entry.valid && !io.flush
-    io.microOpOut(i).bits := queueEntriesIO(entry.bits).microOpOut
+
+    when (!io.flush && (io.microOpOut(i).fire() || !io.microOpOut(i).valid)) {
+      microOpOutReg(i).valid := entry.valid
+      microOpOutReg(i).bits := queueEntriesIO(entry.bits).microOpOut
+    } otherwise when (io.flush || reset.asBool()) {
+      microOpOutReg(i).valid := false.B
+    }
     queueEntriesIO(entry.bits).select := io.microOpOut(i).fire
   }
 

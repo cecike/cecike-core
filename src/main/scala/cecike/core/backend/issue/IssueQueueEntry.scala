@@ -25,8 +25,8 @@ class IssueQueueEntry extends Module {
 
   val rs1Match = io.readyRdMask(microOp.rs1Info.addr)
   val rs2Match = io.readyRdMask(microOp.rs2Info.addr)
-  val rs1Busy = microOp.rs1Info.busy
-  val rs2Busy = microOp.rs2Info.busy
+  val rs1Busy = microOp.rs1Info.busy && (!rs1Match)
+  val rs2Busy = microOp.rs2Info.busy && (!rs2Match)
   val ready = microOpValid && (!rs1Busy) && (!rs2Busy)
 
   when (!io.flush) {
@@ -35,8 +35,8 @@ class IssueQueueEntry extends Module {
       microOpValid := true.B
     }
     when (microOpValid) {
-      microOp.rs1Info.busy := microOp.rs1Info.busy && (!rs1Match)
-      microOp.rs2Info.busy := microOp.rs2Info.busy && (!rs2Match)
+      microOp.rs1Info.busy := rs1Busy
+      microOp.rs2Info.busy := rs2Busy
       when (io.select) {
         microOpValid := false.B
       }
