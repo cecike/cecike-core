@@ -107,6 +107,15 @@ object MicroOp {
 
     microOp
   }
+
+  def apply(bundle: InstructionBundle): MicroOp = apply(bundle.valid, bundle.pc, bundle.instruction, bundle.branchPredictionInfo)
+}
+
+class InstructionBundle extends Bundle {
+  val valid = Bool()
+  val pc = UInt(xLen.W)
+  val instruction = UInt(instructionLen.W)
+  val branchPredictionInfo = new BranchPredictionInfo
 }
 
 class SourceRegisterInfo extends Bundle {

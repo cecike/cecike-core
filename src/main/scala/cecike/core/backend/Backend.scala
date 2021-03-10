@@ -15,7 +15,7 @@ import cecike.core.memory.tlb.TLBQueryPort
 import cecike.utils._
 
 class BackendIO extends Bundle {
-  val microOpIn = DeqIO(Vec(decodeWidth, new MicroOp))
+  val instruction = DeqIO(Vec(decodeWidth, new InstructionBundle))
   val tlbQuery = new TLBQueryPort
   val memoryRead = new MemoryReadPort
   val memoryWrite = new MemoryWritePort
@@ -41,7 +41,11 @@ class Backend extends Module {
   val readyRdMask = rdMask(mainALU.io.readyRd) | rdMask(subALU.io.readyRd) | rdMask(agu.io.readyRd)
 
   decoder.io.flush := rob.io.flush
-  decoder.io.microOpIn <> io.microOpIn
+  decoder.io.microOpIn.valid := io.instruction.valid
+  io.instruction.ready := decoder.io.microOpIn.ready
+  for (i <- 0 until decodeWidth) {
+    decoder.io.microOpIn.bits(i) := MicroOp(io.instruction.bits(i))
+  }
 
   rename.io.microOpIn <> decoder.io.microOpOut
   rename.io.rdCommitPort := rob.io.mapTableRdCommit
