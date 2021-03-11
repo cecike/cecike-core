@@ -4,7 +4,7 @@ import cecike.core.backend.decode.Decoder
 import cecike.core.backend.execution.{CommonFunctionUnit, MemoryFunctionUnit}
 import cecike.core.backend.issue.{IssueQueueDispatcher, NaiveIssueQueue, SerialIssueQueue}
 import cecike.core.backend.lsu.LoadStoreUnit
-import cecike.core.backend.register.RegisterFile
+import cecike.core.backend.register.{RegisterFile, RegisterFileReadPort}
 import cecike.core.backend.rename.RenameStage
 import chisel3._
 import chisel3.util._
@@ -14,11 +14,17 @@ import cecike.core.memory.{MemoryReadPort, MemoryWritePort}
 import cecike.core.memory.tlb.TLBQueryPort
 import cecike.utils._
 
+class BackendDebugIO extends Bundle {
+  val rob = Output(new ReorderBufferDebugIO)
+  val register = new RegisterFileReadPort()
+}
+
 class BackendIO extends Bundle {
   val instruction = DeqIO(Vec(decodeWidth, new InstructionBundle))
   val tlbQuery = new TLBQueryPort
   val memoryRead = new MemoryReadPort
   val memoryWrite = new MemoryWritePort
+  val debug = new BackendDebugIO
 }
 
 class Backend extends Module {
@@ -107,4 +113,7 @@ class Backend extends Module {
   rob.io.robReady(0) := mainALU.io.readyROB
   rob.io.robReady(1) := subALU.io.readyROB
   rob.io.robReady(2) := agu.io.readyROB
+
+  io.debug.rob := rob.io.debug
+  io.debug.register <> register.io.debug
 }

@@ -19,6 +19,7 @@ class RegisterFileWritePort extends Bundle {
 class RegisterFileIO extends Bundle {
   val readPort = Vec(2 * issueWidth, new RegisterFileReadPort)
   val writePort = Vec(issueWidth, new RegisterFileWritePort)
+  val debug = new RegisterFileReadPort()
 }
 
 class RegisterFile(bypass: Seq[Boolean]) extends Module {
@@ -50,4 +51,6 @@ class RegisterFile(bypass: Seq[Boolean]) extends Module {
     val result = MuxCase(data, bypassedResults)
     p.data := result
   }
+
+  io.debug.data := registerFile.read(io.debug.addr)
 }
