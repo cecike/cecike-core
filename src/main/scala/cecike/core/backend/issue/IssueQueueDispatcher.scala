@@ -23,9 +23,10 @@ class IssueQueueDispatcher extends Module {
     val t = Wire(Vec(decodeWidth, Valid(new IssueMicroOp)))
     //t := io.microOpIn.bits
     for (j <- 0 until decodeWidth) {
-      t(j).bits := IssueMicroOp(io.microOpIn.bits(j))
+      val issueMicroOp = IssueMicroOp(io.microOpIn.bits(j))
+      t(j).bits := issueMicroOp
       t(j).bits.robIndex := io.currentROBAddressBase + j.U
-      t(j).valid := (t(j).bits.fuType & io.acceptFuTypes(i)).orR() &&
+      t(j).valid := (issueMicroOp.fuType & io.acceptFuTypes(i)).orR() &&
         io.microOpIn.bits(j).valid
     }
     io.microOpOut(i).bits := t

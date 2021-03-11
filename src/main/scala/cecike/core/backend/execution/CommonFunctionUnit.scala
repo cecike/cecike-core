@@ -16,9 +16,11 @@ class CommonFunctionUnit(hasALU: Boolean, hasBRU: Boolean) extends
   io.rsRead(0).addr := io.microOpIn.bits.rs1Info.addr
   io.rsRead(1).addr := io.microOpIn.bits.rs2Info.addr
 
-  val src1 = RegNext(io.rsRead(0).data)
+  val rsData0 = io.rsRead(0).data
+  val rsData1 = io.rsRead(1).data
+  val src1 = RegNext(rsData0)
   val src2 = RegNext(Mux(InstructionType.needRs2Instruction(io.microOpIn.bits.instType),
-    io.rsRead(1).data,
+    rsData1,
     io.microOpIn.bits.immediate))
   val stage2MicroOp = Reg(UndirectionalValid(new IssueMicroOp))
 

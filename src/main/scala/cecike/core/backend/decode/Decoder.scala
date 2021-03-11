@@ -31,7 +31,7 @@ class Decoder extends Module {
   } otherwise {
     when (!microOpRegValid || io.microOpOut.fire()) {
       io.microOpIn.ready := true.B
-      microOpReg := io.microOpIn.bits
+      microOpReg := decodedMicroOp
       microOpRegValid := io.microOpIn.fire()
     }
   }

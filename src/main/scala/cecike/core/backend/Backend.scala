@@ -43,7 +43,9 @@ class Backend extends Module {
   val register = Module(new RegisterFile(Array(true, true, true)))
   val rob = Module(new ReorderBuffer)
 
-  def rdMask(data: Valid[UInt]) = (data.valid << data.bits).asUInt()
+  def rdMask(data: Valid[UInt]): UInt ={
+    (data.valid << data.bits).asUInt()
+  }
   val readyRdMask = rdMask(mainALU.io.readyRd) | rdMask(subALU.io.readyRd) | rdMask(agu.io.readyRd)
 
   decoder.io.flush := rob.io.flush
