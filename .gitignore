@@ -3,6 +3,7 @@
 /*.fir
 /*.v
 Example.*
+ExampleTest.*
 ### IDEA
 .idea/
 ### sbt

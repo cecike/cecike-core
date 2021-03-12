@@ -45,10 +45,12 @@ class RenameStage extends Module {
   mapTable.io.flush := io.flush
 
   // Rs, Rd of input microOp
+  val opValid = io.microOpIn.bits.map(_.valid)
   val rs1s = io.microOpIn.bits.map(_.rs1())
   val rs2s = io.microOpIn.bits.map(_.rs2())
   val rds = io.microOpIn.bits.map(_.rd())
-  val rdsValid = rds.map(_.orR && !io.flush && !externalStall && io.microOpIn.valid)
+  val rdsValid = (rds zip opValid).map( p =>
+    p._1.orR && p._2 && !io.flush && !externalStall && io.microOpIn.valid)
 
   // Connects input signals
   for (i <- 0 until decodeWidth) {

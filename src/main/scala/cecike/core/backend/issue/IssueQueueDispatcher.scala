@@ -21,7 +21,7 @@ class IssueQueueDispatcher extends Module {
 
   for (i <- 0 until issueClusterNum) {
     val t = Wire(Vec(decodeWidth, Valid(new IssueMicroOp)))
-    //t := io.microOpIn.bits
+
     for (j <- 0 until decodeWidth) {
       val issueMicroOp = IssueMicroOp(io.microOpIn.bits(j))
       t(j).bits := issueMicroOp
@@ -36,5 +36,5 @@ class IssueQueueDispatcher extends Module {
 
   val ready = io.microOpOut.map(_.ready).reduce(_&&_) && io.robMicroOpOut.ready
   io.microOpIn.ready := ready
-  io.microOpOut.foreach(_.valid := ready)
+  io.microOpOut.foreach(_.valid := ready && io.microOpIn.valid)
 }
