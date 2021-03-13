@@ -1,9 +1,10 @@
 package cecike.core.backend.decode
 
+import cecike.CecikeModule
 import chisel3._
 import chisel3.util._
 import cecike.core.common.Constants._
-import cecike.core.common.{CS, MicroOp}
+import cecike.core.common._
 import cecike.utils._
 
 class DecoderIO extends Bundle {
@@ -12,7 +13,7 @@ class DecoderIO extends Bundle {
   val microOpOut = EnqIO(Vec(decodeWidth, new MicroOp))
 }
 
-class Decoder extends Module {
+class Decoder extends CecikeModule {
   val io = IO(new DecoderIO)
 
   val microOpRegValid = RegInit(false.B)
