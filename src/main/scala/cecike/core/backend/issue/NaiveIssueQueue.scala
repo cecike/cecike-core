@@ -29,6 +29,9 @@ class NaiveIssueQueue(fuNum: Int, depth: Int) extends IssueQueueWithCommonEntry(
     !p._1.valid || p._2.valid
   }.reduce(_&&_)
 
+  log("EntryEmpty: %x", entryEmptyOH)
+  log("EntryReady: %x", entryReadyOH)
+
   for (i <- 0 until fuNum) {
     val entry = entryReady._1(i)
 
@@ -40,6 +43,7 @@ class NaiveIssueQueue(fuNum: Int, depth: Int) extends IssueQueueWithCommonEntry(
     }
     when (io.microOpOut(i).fire || !io.microOpOut(i).valid) {
       queueEntries(entry.bits).valid := false.B
+      log(entry.valid, "Select mOp at %d to port %d", entry.bits, i.U)
     }
   }
 
@@ -48,6 +52,8 @@ class NaiveIssueQueue(fuNum: Int, depth: Int) extends IssueQueueWithCommonEntry(
     queueEntries(entry.bits).bits := io.microOpIn.bits(i).bits
     queueEntries(entry.bits).valid := io.microOpIn.fire() &&
       io.microOpIn.bits(i).valid && entry.valid
+    log(io.microOpIn.fire() &&
+      io.microOpIn.bits(i).valid && entry.valid, "Write new mOp to %d", entry.bits)
   }
 
   for (i <- 0 until fuNum) {

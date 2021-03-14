@@ -1,5 +1,6 @@
 package cecike.core.backend.issue
 
+import cecike.CecikeModule
 import chisel3._
 import chisel3.util._
 import cecike.core.common.Constants._
@@ -17,7 +18,7 @@ class IssueQueueIO(val fuNum: Int) extends Bundle {
   val microOpOut = Vec(fuNum, EnqIO(new IssueMicroOp))
 }
 
-abstract class IssueQueue(fuNum: Int, depth: Int) extends Module {
+abstract class IssueQueue(fuNum: Int, depth: Int) extends CecikeModule {
   require(fuNum > 0)
   require(depth > 0)
 
