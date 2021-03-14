@@ -1,5 +1,6 @@
 package cecike.core.backend.register
 
+import cecike.CecikeModule
 import chisel3._
 import chisel3.util._
 import cecike.core.common.Constants._
@@ -22,7 +23,7 @@ class RegisterFileIO extends Bundle {
   val debug = new RegisterFileReadPort()
 }
 
-class RegisterFile(bypass: Seq[Boolean]) extends Module {
+class RegisterFile(bypass: Seq[Boolean]) extends CecikeModule {
   require(bypass.length == issueWidth)
   require(bypass.contains(true))
   val io = IO(new RegisterFileIO)
@@ -35,6 +36,7 @@ class RegisterFile(bypass: Seq[Boolean]) extends Module {
   io.writePort.foreach { p =>
     when(p.valid) {
       registerFile.write(p.addr, p.data)
+      log("Write reg[%d] = %x", p.addr, p.data)
     }
   }
 
@@ -49,6 +51,13 @@ class RegisterFile(bypass: Seq[Boolean]) extends Module {
       (valid, data)
     }
     val result = MuxCase(data, bypassedResults)
+
+    when (bypassedResults.map(_._1).reduce(_||_)) {
+      log("Bypass read reg[%d] = %x", p.addr, result)
+    } otherwise when (p.addr =/= 0.U){
+      log("Normal read reg[%d] = %x", p.addr, result)
+    }
+
     p.data := result
   }
 

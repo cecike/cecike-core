@@ -47,7 +47,7 @@ class VirtualAddressTranslateFSMTester extends ChiselFlatSpec {
 
   for (backendName <- backendNames) {
     "OrderDetector" should s"returns empty data under dummy input (with $backendName)" in {
-      Driver(() => new VirtualAddressTranslateFSM, backendName, verbose = true) {
+      Driver(() => new VirtualAddressTranslateFSM, backendName, verbose = verboseTest) {
         c => new VirtualAddressTranslateFSMTest(c)
       } should be(true)
     }
