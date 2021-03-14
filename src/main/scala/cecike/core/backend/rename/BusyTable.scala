@@ -1,5 +1,6 @@
 package cecike.core.backend.rename
 
+import cecike.CecikeModule
 import chisel3._
 import chisel3.util._
 import cecike.core.common.Constants._
@@ -19,7 +20,7 @@ class BusyTableIO extends Bundle {
   val flush = Input(Bool())
 }
 
-class BusyTable extends Module {
+class BusyTable extends CecikeModule {
   val io = IO(new BusyTableIO)
 
   val busyTable = RegInit(0.U(physicalRegisterNum.W))
@@ -42,4 +43,17 @@ class BusyTable extends Module {
 
   busyTable := Mux(io.flush, 0.U, busyTableWithBackendFeedback | rdWriteMask)
   io.table := Mux(io.flush, 0.U, busyTableWithBackendFeedback | rdWriteMask)
+
+  val hasBackendWrite = !backendWriteMask.andR()
+  val hasRdWrite = rdWriteMask.orR()
+
+  log("Table: %x", busyTable)
+
+  when (hasRdWrite) {
+    log("Set mask: %x", rdWriteMask)
+  }
+
+  when (hasBackendWrite) {
+    log("Free mask: %x", backendWriteMask)
+  }
 }

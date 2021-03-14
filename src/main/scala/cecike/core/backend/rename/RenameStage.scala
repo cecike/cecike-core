@@ -138,7 +138,7 @@ class RenameStage extends Module {
   val stage2PhysicalRs1 = microOpReg.map(_.physicalRs1)
   val stage2PhysicalRs2 = microOpReg.map(_.physicalRs2)
   val stage2PhysicalRd = microOpReg.map(_.physicalRd)
-  val stage2RdValid = stage2PhysicalRd.map(_.orR)
+  val stage2RdValid = stage2PhysicalRd.map(_.orR && outputValid)
 
   // Connect to submodules
   for (i <- 0 until decodeWidth) {
