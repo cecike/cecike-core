@@ -1,5 +1,6 @@
 package cecike.core.backend.rename
 
+import cecike.CecikeModule
 import chisel3._
 import chisel3.util._
 import cecike.core.common.Constants._
@@ -13,7 +14,7 @@ class FreeListIO extends Bundle {
   val persistReq = Input(Vec(decodeWidth, Valid(UInt(physicalRegisterAddressWidth.W))))
 }
 
-class FreeList extends Module {
+class FreeList extends CecikeModule {
   val io = IO(new FreeListIO)
 
   val architecturalFreeList = RegInit((~1.U(physicalRegisterNum.W)).asUInt)
@@ -41,6 +42,10 @@ class FreeList extends Module {
     .map(p => p._1.valid || (!p._2))
     .reduce(_&_)
 
+  when (!io.allocateResp.valid) {
+    log("No more place to allocate")
+  }
+
   val allocateMask = Mux(io.allocateResp.valid,
     (allocateResp zip io.allocateReq)
       .map(p => Mux(p._2, UIntToOH(p._1.bits, physicalRegisterNum), 0.U))
@@ -57,4 +62,18 @@ class FreeList extends Module {
 
   architecturalFreeList := nextArchitecturalFreeList
   freeList := Mux(io.flush, nextArchitecturalFreeList, nextFreeList)
+
+  log("Freelist: %x", freeList)
+
+  when (allocateMask.orR()) {
+    log("Allocate mask: %x", allocateMask)
+  }
+
+  when (deallocateMask.orR()) {
+    log("Deallocate mask: %x", deallocateMask)
+  }
+
+  when (persistMask.orR()) {
+    log("Persist mask: %x", persistMask)
+  }
 }
