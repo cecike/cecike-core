@@ -85,7 +85,7 @@ class RenameStage extends Module {
   for (i <- 0 until decodeWidth) {
     writesToMapTable(i) :=
       orderInfo(i).validWithMask((~(0.U(decodeWidth.W))).asUInt, i) &&
-        freeList.io.allocateResp.valid
+        freeList.io.allocateResp.valid && io.microOpIn.valid
   }
 
   // Connects to map table

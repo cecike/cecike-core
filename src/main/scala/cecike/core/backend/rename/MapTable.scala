@@ -1,5 +1,6 @@
 package cecike.core.backend.rename
 
+import cecike.CecikeModule
 import chisel3._
 import chisel3.util._
 import cecike.core.common.Constants._
@@ -25,7 +26,7 @@ class MapTableIO extends Bundle {
   val flush = Input(Bool())
 }
 
-class MapTable extends Module {
+class MapTable extends CecikeModule {
   val io = IO(new MapTableIO)
 
   val currentMapTable = Mem(logicalRegisterNum, UInt(physicalRegisterAddressWidth.W))
@@ -35,7 +36,10 @@ class MapTable extends Module {
   io.rs2ReadPort.foreach(p => p.physicalAddr := Mux(p.logicalAddr.orR(), currentMapTable(p.logicalAddr), 0.U))
   io.rdReadPort.foreach(p => p.physicalAddr := Mux(p.logicalAddr.orR(), currentMapTable(p.logicalAddr), 0.U))
 
-  io.rdCommitPort.foreach(p => when (p.valid) {architecturalMapTable.write(p.logicalAddr, p.physicalAddr)})
+  io.rdCommitPort.foreach(p => when (p.valid) {
+    architecturalMapTable.write(p.logicalAddr, p.physicalAddr)
+    log("archMap[%d] = %d", p.logicalAddr, p.physicalAddr)
+  })
 
   val flush = RegNext(io.flush)
   when (flush) {
@@ -43,6 +47,9 @@ class MapTable extends Module {
       currentMapTable.write(i.U, architecturalMapTable(i.U))
     }
   } otherwise {
-    io.rdWritePort.foreach(p => when (p.valid) {currentMapTable.write(p.logicalAddr, p.physicalAddr)})
+    io.rdWritePort.foreach(p => when (p.valid) {
+      currentMapTable.write(p.logicalAddr, p.physicalAddr)
+      log("phyMap[%d] = %d", p.logicalAddr, p.physicalAddr)
+    })
   }
 }
