@@ -16,8 +16,7 @@ class FreeListTest(c: FreeList) extends PeekPokeTester(c) {
   for(i <- 0 until 2) {
     poke(c.io.allocateReq(i), false)
   }
-  poke(c.io.deallocateReq(0).bits, 1)
-  poke(c.io.deallocateReq(0).valid, true)
+  poke(c.io.deallocateReq(0), 2)
   step(1)
   poke(c.io.allocateReq(0), true)
   expect(c.io.allocateResp.valid, true)

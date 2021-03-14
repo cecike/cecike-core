@@ -1,5 +1,6 @@
 package cecike.core.backend
 
+import cecike.CecikeModule
 import cecike.core.backend.rename.MapTableWritePort
 import chisel3._
 import chisel3.util._
@@ -40,12 +41,12 @@ class ReorderBufferIO extends Bundle {
 
   val flush = Output(Bool())
   val mapTableRdCommit = Vec(decodeWidth, Flipped(new MapTableWritePort))
-  val freelistCommitDeallocateReqPort = Vec(decodeWidth, Valid(UInt(physicalRegisterAddressWidth.W)))
+  val freelistCommitDeallocateReqPort = Vec(decodeWidth, Output(UInt(physicalRegisterNum.W)))
 
   val debug = Output(new ReorderBufferDebugIO)
 }
 
-class ReorderBuffer extends Module {
+class ReorderBuffer extends CecikeModule {
   require(isPow2(robRowNum))
   val io = IO(new ReorderBufferIO)
 
@@ -147,11 +148,11 @@ class ReorderBuffer extends Module {
 
   // Deallocate free list
   for (i <- 0 until decodeWidth) {
-    io.freelistCommitDeallocateReqPort(i).valid := commit && currentEntry().microOp(i).rdValid
-    io.freelistCommitDeallocateReqPort(i).bits := Mux(flushMask(i),
-      currentEntry().microOp(i).physicalRd,
-      currentEntry().microOp(i).oldPhysicalRd
-    )
+    val valid = commit && currentEntry().microOp(i).rdValid
+    val data = Mux(flushMask(i), 0.U, UIntToOH(currentEntry().microOp(i).oldPhysicalRd)) |
+      Mux(!currentEntry().microOp(i).orderInfo.validWithMask((~Cat(flushMask.reverse)).asUInt, i),
+        UIntToOH(currentEntry().microOp(i).physicalRd), 0.U)
+    io.freelistCommitDeallocateReqPort(i) := Mux(valid, data, 0.U)
   }
 
   // Commit to map table

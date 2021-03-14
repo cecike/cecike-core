@@ -14,7 +14,7 @@ class RenameStageIO extends Bundle {
   // TODO: Inputs from ROB and compute units
   val flush = Input(Bool())
   val rdCommitPort = Vec(decodeWidth, new MapTableWritePort)
-  val rdCommitDeallocateReqPort = Input(Vec(decodeWidth, Valid(UInt(physicalRegisterAddressWidth.W))))
+  val rdCommitDeallocateReqPort = Input(Vec(decodeWidth, UInt(physicalRegisterNum.W)))
 
   val backendWritePort = Input(Vec(issueWidth, Valid(UInt(physicalRegisterAddressWidth.W))))
 

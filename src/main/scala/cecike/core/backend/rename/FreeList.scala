@@ -10,7 +10,7 @@ class FreeListIO extends Bundle {
   val flush = Input(Bool())
   val allocateReq = Input(Vec(decodeWidth, Bool()))
   val allocateResp = Output(Valid(Vec(decodeWidth, UInt(physicalRegisterAddressWidth.W))))
-  val deallocateReq = Input(Vec(decodeWidth, Valid(UInt(physicalRegisterAddressWidth.W))))
+  val deallocateReq = Input(Vec(decodeWidth, UInt(physicalRegisterNum.W)))
   val persistReq = Input(Vec(decodeWidth, Valid(UInt(physicalRegisterAddressWidth.W))))
 }
 
@@ -51,7 +51,6 @@ class FreeList extends CecikeModule {
       .map(p => Mux(p._2, UIntToOH(p._1.bits, physicalRegisterNum), 0.U))
       .reduce(_|_), 0.U)
   val deallocateMask = io.deallocateReq
-    .map(p => Mux(p.valid, UIntToOH(p.bits, physicalRegisterNum), 0.U))
     .reduce(_|_) & (~1.U(physicalRegisterNum.W)).asUInt
   val persistMask = io.persistReq
     .map(p => Mux(p.valid, UIntToOH(p.bits, physicalRegisterNum), 0.U))
