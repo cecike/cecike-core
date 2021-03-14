@@ -44,16 +44,7 @@ class BusyTable extends CecikeModule {
   busyTable := Mux(io.flush, 0.U, busyTableWithBackendFeedback | rdWriteMask)
   io.table := Mux(io.flush, 0.U, busyTableWithBackendFeedback | rdWriteMask)
 
-  val hasBackendWrite = !backendWriteMask.andR()
-  val hasRdWrite = rdWriteMask.orR()
-
   log("Table: %x", busyTable)
-
-  when (hasRdWrite) {
-    log("Set mask: %x", rdWriteMask)
-  }
-
-  when (hasBackendWrite) {
-    log("Free mask: %x", backendWriteMask)
-  }
+  log(rdWriteMask.orR(), "Set mask: %x", rdWriteMask)
+  log(!backendWriteMask.andR(), "Free mask: %x", backendWriteMask)
 }

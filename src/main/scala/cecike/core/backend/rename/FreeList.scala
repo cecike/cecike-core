@@ -64,16 +64,8 @@ class FreeList extends CecikeModule {
   freeList := Mux(io.flush, nextArchitecturalFreeList, nextFreeList)
 
   log("Freelist: %x", freeList)
-
-  when (allocateMask.orR()) {
-    log("Allocate mask: %x", allocateMask)
-  }
-
-  when (deallocateMask.orR()) {
-    log("Deallocate mask: %x", deallocateMask)
-  }
-
-  when (persistMask.orR()) {
-    log("Persist mask: %x", persistMask)
-  }
+  log("Architectural free list: %x", architecturalFreeList)
+  log(allocateMask.orR(), "Allocate mask: %x", allocateMask)
+  log(deallocateMask.orR(), "Deallocate mask: %x", deallocateMask)
+  log(persistMask.orR(), "Persist mask: %x", persistMask)
 }
