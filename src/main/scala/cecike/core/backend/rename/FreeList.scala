@@ -42,9 +42,7 @@ class FreeList extends CecikeModule {
     .map(p => p._1.valid || (!p._2))
     .reduce(_&_)
 
-  when (!io.allocateResp.valid) {
-    log("No more place to allocate")
-  }
+  log(!io.allocateResp.valid, "No more place to allocate")
 
   val allocateMask = Mux(io.allocateResp.valid,
     (allocateResp zip io.allocateReq)
