@@ -21,6 +21,7 @@ class BackendDebugIO extends Bundle {
 
 class BackendIO extends Bundle {
   val instruction = DeqIO(Vec(decodeWidth, new InstructionBundle))
+  val branchInfo = Output(new BranchInfo)
   val tlbQuery = new TLBQueryPort
   val memoryRead = new MemoryReadPort
   val memoryWrite = new MemoryWritePort
@@ -87,6 +88,7 @@ class Backend extends Module {
   mainALU.io.microOpIn <> naiveIssueQueue.io.microOpOut(0)
   mainALU.io.rsRead(0) <> register.io.readPort(0)
   mainALU.io.rsRead(1) <> register.io.readPort(1)
+  io.branchInfo := mainALU.io.branchInfo
 
   subALU.io.flush := rob.io.flush
   subALU.io.microOpIn <> naiveIssueQueue.io.microOpOut(1)
