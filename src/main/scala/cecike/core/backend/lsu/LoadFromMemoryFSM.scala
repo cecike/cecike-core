@@ -1,13 +1,12 @@
 package cecike.core.backend.lsu
 
+import cecike.CecikeModule
 import cecike.core.backend.register.RegisterFileWritePort
 import chisel3._
 import chisel3.util._
 import cecike.core.common.Constants._
 import cecike.core.common._
 import cecike.core.memory.{MemoryReadPort, MemoryWritePort}
-import cecike.core.memory.tlb.TLBQueryPort
-import cecike.utils.RingBufferManager
 
 class LoadFromMemoryFSMIO extends Bundle {
   val lsuEntry = DeqIO(new LSUEntry)
@@ -21,7 +20,7 @@ class LoadFromMemoryFSMIO extends Bundle {
   val rdWrite = Flipped(new RegisterFileWritePort)
 }
 
-class LoadFromMemoryFSM extends Module {
+class LoadFromMemoryFSM extends CecikeModule {
   val io = IO(new LoadFromMemoryFSMIO)
 
   // default values
@@ -133,4 +132,6 @@ class LoadFromMemoryFSM extends Module {
       }
     }
   }
+
+  log("Current state: %d Next state: %d", state, nextState)
 }

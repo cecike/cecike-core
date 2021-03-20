@@ -1,5 +1,6 @@
 package cecike.core.backend.lsu
 
+import cecike.CecikeModule
 import chisel3._
 import chisel3.util._
 import cecike.core.common.Constants._
@@ -21,7 +22,7 @@ class VirtualAddressTranslateFSMIO extends Bundle {
   val debug = Output(new VirtualAddressTranslateFSMDebugIO)
 }
 
-class VirtualAddressTranslateFSM extends Module {
+class VirtualAddressTranslateFSM extends CecikeModule {
   val io = IO(new VirtualAddressTranslateFSMIO)
 
   // default values
@@ -142,4 +143,6 @@ class VirtualAddressTranslateFSM extends Module {
   // debug
   io.debug.state := state
   io.debug.nextState := nextState
+
+  log("Current state: %d Next state: %d", state, nextState)
 }
