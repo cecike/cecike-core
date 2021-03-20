@@ -28,7 +28,10 @@ class SerialIssueQueue(depth: Int) extends IssueQueue(1, depth) {
   for (i <- 0 until decodeWidth) {
     val entry = queueEntries(queueManager.io.resp.bits(i))
     entry.bits := io.microOpIn.bits(i).bits
-    entry.valid := io.microOpIn.fire
+    entry.valid := io.microOpIn.fire && io.microOpIn.bits(i).valid
+    log(io.microOpIn.fire && io.microOpIn.bits(i).valid,
+      "Write new mOp of index %d to %d",
+      io.microOpIn.bits(i).bits.robIndex, queueManager.io.resp.bits(i))
   }
 
   // Output
@@ -39,4 +42,7 @@ class SerialIssueQueue(depth: Int) extends IssueQueue(1, depth) {
     io.busyTable(outputEntry.bits.rs1Info.addr) &&
     io.busyTable(outputEntry.bits.rs2Info.addr)
   queueManager.io.deallocate(0) := io.microOpOut(0).fire
+  log(io.microOpOut(0).fire, "Select entry %d to fire", queueManager.io.head)
+
+  log("Head: %d Tail: %d", queueManager.io.head, queueManager.io.tail)
 }
