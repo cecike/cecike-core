@@ -58,7 +58,7 @@ object MultiBinaryPriorityEncoder {
     val resultOH = Wire(Vec(n, UInt(in.getWidth.W)))
     val temp = Wire(Vec(n, UInt(in.getWidth.W)))
 
-    val commonResult = CommonBinaryPriorityEncoder(in & mask(0))
+    val commonResult = CommonBinaryPriorityEncoder(in & mask.head)
     result(0) := commonResult._1
     resultOH(0) := commonResult._2
     temp(0) := in & (~resultOH(0)).asUInt
