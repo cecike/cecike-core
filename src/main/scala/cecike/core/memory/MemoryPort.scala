@@ -20,3 +20,13 @@ class MemoryReadPort extends Bundle {
 class MemoryWritePort extends Bundle {
   val storeInfo = EnqIO(new StoreInfo)
 }
+
+class InstructionAddressInfo extends Bundle {
+  val address = UInt(xLen.W)
+  val compact = Bool()
+}
+
+class InstructionMemoryReadPort extends Bundle {
+  val addressInfo = Valid(new InstructionAddressInfo)
+  val data = Valid(Vec(decodeWidth, new InstructionBundle))
+}
