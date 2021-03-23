@@ -41,6 +41,8 @@ object Constants {
   val storeBufferDepth = 8
   val storeBufferAddressWidth = log2Ceil(storeBufferDepth)
 
+  val pcInitValue = BigInt("80000000", 16).U(xLen.W)
+
   val verboseTest = false
 
   object TF {
