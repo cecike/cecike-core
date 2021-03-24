@@ -41,6 +41,9 @@ object Constants {
   val storeBufferDepth = 8
   val storeBufferAddressWidth = log2Ceil(storeBufferDepth)
 
+  val cacheLineWidth = 64
+  val cacheLineAddressWidth = log2Ceil(cacheLineWidth)
+
   val pcInitValue = BigInt("80000000", 16).U(xLen.W)
 
   val verboseTest = false

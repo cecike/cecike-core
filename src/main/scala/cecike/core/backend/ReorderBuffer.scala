@@ -40,6 +40,8 @@ class ReorderBufferIO extends Bundle {
   val storeCommit = Output(Bool())
 
   val flush = Output(Bool())
+  val pc = Valid(UInt(xLen.W))
+
   val mapTableRdCommit = Vec(decodeWidth, Flipped(new MapTableWritePort))
   val freelistCommitDeallocateReqPort = Vec(decodeWidth, Output(UInt(physicalRegisterNum.W)))
 
@@ -98,6 +100,21 @@ class ReorderBuffer extends CecikeModule {
   val needFlush = flushMask(decodeWidth - 1)
   io.flush := needFlush
   bufferManager.io.clear := needFlush
+
+  // has flush entry
+  val flushMaskCat = Cat(flushMask.reverse)
+  val flushEntryIndex = BinaryPriorityEncoder(flushMaskCat)
+  val flushEntry = currentEntry().microOp(flushEntryIndex.bits)
+  io.pc.valid := flushEntryIndex.valid
+  io.pc.bits := Mux(
+    flushEntry.branchInfo.taken,
+    flushEntry.branchInfo.dest,
+    currentEntry().pc(flushEntryIndex.bits) + 4.U
+  )
+  log(p"Flush mask: ${flushMask}")
+  log("Cat flush mask: %x", flushMaskCat)
+  log(flushEntryIndex.valid, "Flush entry: %d", flushEntryIndex.bits)
+  log(flushEntryIndex.valid, "Change PC to: %x", io.pc.bits)
 
   // store valid
   val previousMicroOpDone = Wire(Vec(decodeWidth, Bool()))

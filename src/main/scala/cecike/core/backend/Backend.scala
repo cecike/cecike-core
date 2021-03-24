@@ -26,6 +26,8 @@ class BackendIO extends Bundle {
   val memoryRead = new MemoryReadPort
   val memoryWrite = new MemoryWritePort
   val debug = new BackendDebugIO
+  val flush = Output(Bool())
+  val pc = Valid(UInt(xLen.W))
 }
 
 class Backend extends Module {
@@ -117,6 +119,9 @@ class Backend extends Module {
   rob.io.robReady(0) := mainALU.io.readyROB
   rob.io.robReady(1) := subALU.io.readyROB
   rob.io.robReady(2) := agu.io.readyROB
+
+  io.flush := rob.io.flush
+  io.pc := rob.io.pc
 
   io.debug.rob := rob.io.debug
   io.debug.register <> register.io.debug

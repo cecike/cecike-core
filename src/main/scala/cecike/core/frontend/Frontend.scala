@@ -16,11 +16,20 @@ import cecike.utils._
 
 class FrontEndIO extends Bundle {
   val instruction = EnqIO(Vec(decodeWidth, new InstructionBundle))
-  val branchInfo = Input(new BranchInfo)
+  val branchInfo = Input(new BranchInfo) // to update branch predictor
   val memoryRead = new InstructionMemoryReadPort
   val flush = Input(Bool())
 }
 
 class Frontend extends Module {
   val io = IO(new FrontEndIO)
+
+  val pc = RegInit(pcInitValue)
+
+  val directNextPC = pc + 8.U
+  val crossLineNextPC = directNextPC(xLen, cacheLineAddressWidth) ## 0.U(cacheLineAddressWidth.W)
+  val crossCacheLine = directNextPC(xLen, cacheLineAddressWidth) === pc(xLen, cacheLineAddressWidth)
+  val normalNextPC = Mux(crossCacheLine, crossLineNextPC, directNextPC)
+
+
 }
