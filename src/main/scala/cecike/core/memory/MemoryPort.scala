@@ -28,5 +28,5 @@ class InstructionAddressInfo extends Bundle {
 
 class InstructionMemoryReadPort extends Bundle {
   val addressInfo = Valid(new InstructionAddressInfo)
-  val data = Flipped(Valid(Vec(decodeWidth, new InstructionBundle)))
+  val data = Flipped(Valid(Vec(decodeWidth, Valid(UInt(instructionLen.W)))))
 }
