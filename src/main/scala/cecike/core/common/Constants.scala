@@ -44,7 +44,8 @@ object Constants {
   val cacheLineWidth = 64
   val cacheLineAddressWidth = log2Ceil(cacheLineWidth)
 
-  val pcInitValue = BigInt("80000000", 16).U(xLen.W)
+  val pcInitLitValue = BigInt("80000000", 16)
+  val pcInitValue = pcInitLitValue.U(xLen.W)
 
   val verboseTest = false
 
