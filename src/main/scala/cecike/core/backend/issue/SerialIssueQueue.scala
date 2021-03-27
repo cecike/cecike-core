@@ -39,9 +39,10 @@ class SerialIssueQueue(depth: Int) extends IssueQueue(1, depth) {
   io.microOpOut(0).bits := outputEntry.bits
   io.microOpOut(0).valid := !io.flush &&
     outputEntry.valid &&
-    io.busyTable(outputEntry.bits.rs1Info.addr) &&
-    io.busyTable(outputEntry.bits.rs2Info.addr)
+    !io.busyTable(outputEntry.bits.rs1Info.addr) &&
+    !io.busyTable(outputEntry.bits.rs2Info.addr)
   queueManager.io.deallocate(0) := io.microOpOut(0).fire
+  log(p"${io.microOpOut(0).valid}")
   log(io.microOpOut(0).fire, "Select entry %d to fire", queueManager.io.head)
 
   log("Head: %d Tail: %d", queueManager.io.head, queueManager.io.tail)

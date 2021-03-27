@@ -56,6 +56,8 @@ class LoadFromMemoryFSM extends CecikeModule {
     is (s_idle) {
       eat()
       when (io.lsuEntry.fire()) {
+        log("Fire")
+        lsuEntry := io.lsuEntry.bits
         shakeFromInput()
         shakeNextState()
       }
@@ -75,7 +77,7 @@ class LoadFromMemoryFSM extends CecikeModule {
         io.readyROB.valid := true.B
         io.readyROB.bits := lsuEntry.aguInfo.opInfo.robIndex
 
-        io.rdWrite.valid := false.B
+        io.rdWrite.valid := true.B
         io.rdWrite.addr := lsuEntry.aguInfo.opInfo.rdInfo.bits
         io.rdWrite.data := io.memoryRead.data.bits
 
@@ -105,17 +107,21 @@ class LoadFromMemoryFSM extends CecikeModule {
     }
   }
 
+  state := nextState
+
   def eat(): Unit = {
     io.lsuEntry.ready := !io.flush
   }
 
   def shakeFromInput(): Unit = {
+    log(p"ShakeFromInput ${io.lsuEntry.bits.aguInfo.address}")
     io.memoryRead.addressInfo.valid := !io.storeBuffer.exist && !io.flush
     io.memoryRead.addressInfo.bits := io.lsuEntry.bits.aguInfo.address
     io.storeBuffer.address := io.lsuEntry.bits.aguInfo.address.address
   }
 
   def shakeFromRegister(): Unit = {
+    log(p"ShakeFromRegister ${lsuEntry.aguInfo.address}")
     io.memoryRead.addressInfo.valid := !io.storeBuffer.exist && !io.flush
     io.memoryRead.addressInfo.bits := lsuEntry.aguInfo.address
     io.storeBuffer.address := lsuEntry.aguInfo.address.address

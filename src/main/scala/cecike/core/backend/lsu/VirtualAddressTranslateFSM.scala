@@ -131,14 +131,12 @@ class VirtualAddressTranslateFSM extends CecikeModule {
   }
 
   // Output
-  val result = Wire(new LSUEntry)
+  val result = io.res.bits
   result := lsuEntry
-
   when (storeAddress) {
     result.aguInfo.address.address := io.tlb.queryResult.bits.physicalAddress
     result.status.exception := !io.tlb.queryResult.bits.valid
   }
-  io.res.bits := result
 
   // debug
   io.debug.state := state
