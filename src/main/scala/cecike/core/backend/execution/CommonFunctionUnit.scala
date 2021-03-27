@@ -45,7 +45,7 @@ class CommonFunctionUnit(hasALU: Boolean, hasBRU: Boolean) extends
   val aluResult = alu.io.result
 
   // BRU
-  val isBRUOp = hasBRU.B && FunctionUnitType.typeMatch(op.fuType, FunctionUnitType.FU_BRU)
+  val isBRUOp = opValid && hasBRU.B && FunctionUnitType.typeMatch(op.fuType, FunctionUnitType.FU_BRU)
   val bru = Module(new RawBRU)
   bru.io.valid := isBRUOp
   bru.io.op := op.fuOp
@@ -59,7 +59,7 @@ class CommonFunctionUnit(hasALU: Boolean, hasBRU: Boolean) extends
   if (hasBRU) {
     io.branchInfo.mispredicted := mispredictedTaken || mispredictedDest
     io.branchInfo.taken := bru.io.resultPC.valid
-    io.branchInfo.dest := op.branchPredictionInfo.dest
+    io.branchInfo.dest := bru.io.resultPC.bits
     io.branchInfo.valid := isBRUOp
     io.branchInfo.robIndex := op.robIndex
   }

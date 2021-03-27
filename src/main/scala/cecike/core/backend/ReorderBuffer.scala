@@ -89,7 +89,7 @@ class ReorderBuffer extends CecikeModule {
 
   bufferManager.io.deallocate(0) := commit
 
-  val incomeFlush = (io.branchInfo.valid &&
+  val incomeFlush = (io.branchInfo.valid && io.branchInfo.mispredicted &&
     rowAddress(io.branchInfo.robIndex) === bufferHead) << bankAddress(io.branchInfo.robIndex)
 
   val flushMask = Wire(Vec(decodeWidth, Bool()))
@@ -106,11 +106,12 @@ class ReorderBuffer extends CecikeModule {
   val flushEntryIndex = BinaryPriorityEncoder(flushMaskCat)
   val flushEntry = currentEntry().microOp(flushEntryIndex.bits)
   io.pc.valid := flushEntryIndex.valid
-  io.pc.bits := Mux(
+  io.pc.bits := Mux(incomeFlush(flushEntryIndex.bits),
+    io.branchInfo.dest, Mux(
     flushEntry.branchInfo.taken,
     flushEntry.branchInfo.dest,
     currentEntry().pc(flushEntryIndex.bits) + 4.U
-  )
+  ))
   log(p"Flush mask: ${flushMask}")
   log("Cat flush mask: %x", flushMaskCat)
   log(flushEntryIndex.valid, "Flush entry: %d", flushEntryIndex.bits)
@@ -134,10 +135,13 @@ class ReorderBuffer extends CecikeModule {
 
   // Store branch info
   when (io.branchInfo.valid) {
+    log(p"Write branch info ${io.branchInfo} to ${io.branchInfo.robIndex}")
     val addr = io.branchInfo.robIndex
     val row = rowAddress(addr)
     val bank = bankAddress(addr)
-    buffer(row).microOp(bank).branchInfo.mispredicted := io.branchInfo.mispredicted
+    val info = buffer(row).microOp(bank).branchInfo
+    val incomeInfo = io.branchInfo
+    info := incomeInfo
   }
 
   // Store micro op
