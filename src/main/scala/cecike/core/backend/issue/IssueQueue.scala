@@ -26,33 +26,3 @@ abstract class IssueQueue(fuNum: Int, depth: Int) extends CecikeModule {
 
   io.acceptFuTypes := io.fuTypes.reduce(_|_)
 }
-
-abstract class IssueQueueWithCommonEntry(fuNum: Int, depth: Int) extends
-  IssueQueue(fuNum, depth) {
-
-  val queueEntries = Reg(Vec(depth, Valid(new IssueMicroOp)))
-  when (reset.asBool() || io.flush) {
-    queueEntries.foreach(_.valid := false.B)
-  }
-
-  val queueRs1Match = Wire(Vec(depth, Bool()))
-  val queueRs2Match = Wire(Vec(depth, Bool()))
-  val queueRs1Busy = Wire(Vec(depth, Bool()))
-  val queueRs2Busy = Wire(Vec(depth, Bool()))
-  val queueReady = Wire(Vec(depth, Bool()))
-
-  for(i <- 0 until depth) {
-    queueRs1Match(i) := io.readyRdMask(queueEntries(i).bits.rs1Info.addr)
-    queueRs2Match(i) := io.readyRdMask(queueEntries(i).bits.rs2Info.addr)
-
-    queueRs1Busy(i) := queueEntries(i).bits.rs1Info.busy && !queueRs1Match(i)
-    queueRs2Busy(i) := queueEntries(i).bits.rs2Info.busy && !queueRs2Match(i)
-
-    queueReady(i) := queueEntries(i).valid && !queueRs1Busy(i) && !queueRs2Busy(i)
-
-    when (queueEntries(i).valid) {
-      queueEntries(i).bits.rs1Info.busy := queueRs1Busy(i)
-      queueEntries(i).bits.rs2Info.busy := queueRs2Busy(i)
-    }
-  }
-}

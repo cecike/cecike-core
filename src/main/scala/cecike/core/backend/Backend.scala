@@ -1,5 +1,6 @@
 package cecike.core.backend
 
+import cecike.CecikeModule
 import cecike.core.backend.decode.Decoder
 import cecike.core.backend.execution.{CommonFunctionUnit, MemoryFunctionUnit}
 import cecike.core.backend.issue.{IssueQueueDispatcher, NaiveIssueQueue, SerialIssueQueue}
@@ -30,7 +31,7 @@ class BackendIO extends Bundle {
   val pc = Valid(UInt(xLen.W))
 }
 
-class Backend extends Module {
+class Backend extends CecikeModule {
   val io = IO(new BackendIO)
 
   // Sub modules

@@ -88,6 +88,7 @@ class ReorderBuffer extends CecikeModule {
   val commit = nonEmpty(readyToCommit, false.B)
 
   bufferManager.io.deallocate(0) := commit
+  log(commit, p"Commit $bufferHead")
 
   val incomeFlush = (io.branchInfo.valid && io.branchInfo.mispredicted &&
     rowAddress(io.branchInfo.robIndex) === bufferHead) << bankAddress(io.branchInfo.robIndex)
@@ -196,4 +197,6 @@ class ReorderBuffer extends CecikeModule {
   io.debug.shouldCommit := commit
   io.debug.commitReady := currentEntryReady
   io.debug.commitDone := currentEntryDone
+
+  log(p"Head: $bufferHead Tail: $bufferTail")
 }
