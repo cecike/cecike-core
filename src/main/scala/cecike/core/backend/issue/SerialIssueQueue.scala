@@ -34,16 +34,28 @@ class SerialIssueQueue(depth: Int) extends IssueQueue(1, depth) {
       io.microOpIn.bits(i).bits.robIndex, queueManager.io.resp.bits(i))
   }
 
+  queueManager.io.deallocate(0) := false.B
   // Output
+  val stagedOutputEntryValid = RegInit(false.B)
+  val stagedOutputEntry = Reg(new SerialIssueQueueEntry)
+
   val outputEntry = queueEntries(queueManager.io.head)
-  io.microOpOut(0).bits := outputEntry.bits
-  io.microOpOut(0).valid := !io.flush &&
+  val readyToIssue = !io.flush &&
     outputEntry.valid &&
     !io.busyTable(outputEntry.bits.rs1Info.addr) &&
     !io.busyTable(outputEntry.bits.rs2Info.addr)
-  queueManager.io.deallocate(0) := io.microOpOut(0).fire
-  log(p"${io.microOpOut(0).valid}")
-  log(io.microOpOut(0).fire, "Select entry %d to fire", queueManager.io.head)
+
+  when (io.flush || (io.microOpOut(0).fire && !readyToIssue)) {
+    stagedOutputEntryValid := false.B
+  } otherwise when((!stagedOutputEntryValid || io.microOpOut(0).fire) && readyToIssue) {
+    log("Select entry %d to fire", queueManager.io.head)
+    stagedOutputEntry := outputEntry
+    stagedOutputEntryValid := true.B
+    queueManager.io.deallocate(0) := true.B
+  }
+
+  io.microOpOut(0).bits := stagedOutputEntry.bits
+  io.microOpOut(0).valid := !io.flush && stagedOutputEntryValid
 
   log("Head: %d Tail: %d", queueManager.io.head, queueManager.io.tail)
 }

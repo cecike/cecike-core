@@ -1,5 +1,6 @@
 package cecike.core.backend.lsu
 
+import cecike.CecikeModule
 import cecike.core.backend.register.RegisterFileWritePort
 import chisel3._
 import chisel3.util._
@@ -34,7 +35,7 @@ class StoreBufferIO extends Bundle {
   val storeInfo = EnqIO(new StoreInfo)
 }
 
-class StoreBuffer extends Module {
+class StoreBuffer extends CecikeModule {
   val io = IO(new StoreBufferIO)
 
   val buffer = Reg(Vec(storeBufferDepth, new StoreBufferEntry))

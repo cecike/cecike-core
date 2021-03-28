@@ -1,5 +1,6 @@
 package cecike.core.backend.execution
 
+import cecike.CecikeModule
 import cecike.core.backend.lsu.{AGUInfo, LoadStoreInfo}
 import cecike.core.backend.register.{RegisterFileReadPort, RegisterFileWritePort}
 import chisel3._
@@ -20,7 +21,7 @@ class FunctionUnitIO(val hasBRU: Boolean, val hasLSU: Boolean) extends Bundle {
   val loadStoreInfo = if (hasLSU) new LoadStoreInfo else null
 }
 
-abstract class FunctionUnit(hasALU: Boolean, hasBRU: Boolean, hasMDU: Boolean, hasLSU: Boolean) extends Module {
+abstract class FunctionUnit(hasALU: Boolean, hasBRU: Boolean, hasMDU: Boolean, hasLSU: Boolean) extends CecikeModule {
   require(!(hasMDU && hasBRU))
   require(!(hasLSU && (hasALU || hasBRU || hasMDU)))
   val io = IO(new FunctionUnitIO(hasBRU, hasLSU))

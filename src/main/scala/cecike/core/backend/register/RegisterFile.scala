@@ -45,9 +45,9 @@ class RegisterFile(bypass: Seq[Boolean]) extends CecikeModule {
     val addr = p.addr
     val addrNotZero = p.addr.orR()
     val data = Mux(addrNotZero, registerFile.read(addr), 0.U)
-    val bypassedResults = bypassedWritePort.map { p =>
-      val valid = p.valid && p.addr === addr && addrNotZero
-      val data = p.data
+    val bypassedResults = bypassedWritePort.map { q =>
+      val valid = q.valid && q.addr === p.addr && addrNotZero
+      val data = q.data
       (valid, data)
     }
     val result = MuxCase(data, bypassedResults)

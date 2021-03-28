@@ -1,5 +1,6 @@
 package cecike.core.backend.rename
 
+import cecike.CecikeModule
 import chisel3._
 import chisel3.util._
 import cecike.core.common.Constants._
@@ -22,7 +23,7 @@ class RenameStageIO extends Bundle {
   val debug = Output(Vec(decodeWidth, new MicroOp))
 }
 
-class RenameStage extends Module {
+class RenameStage extends CecikeModule {
   val io = IO(new RenameStageIO)
 
   // External stall
@@ -124,7 +125,7 @@ class RenameStage extends Module {
     microOpReg := microOpRegNext
   }
 
-  val stage2MicroOp = Wire(Vec(decodeWidth, new MicroOp))
+  val stage2MicroOp = io.microOpOut.bits
   stage2MicroOp := microOpReg
 
   // Rename stage 2 - read busy table and mask result by order info
@@ -161,17 +162,16 @@ class RenameStage extends Module {
     stage2MicroOp(i).physicalRs2Busy := Mux(maskRs2.valid, true.B, rs2Busy(i))
 
     when (maskRs1.valid) {
-      stage2MicroOp(i).physicalRs1 := maskRs1.bits
+      stage2MicroOp(i).physicalRs1 := microOpReg(maskRs1.bits).physicalRd
     }
 
     when (maskRs2.valid) {
-      stage2MicroOp(i).physicalRs2 := maskRs2.bits
+      stage2MicroOp(i).physicalRs2 := microOpReg(maskRs2.bits).physicalRd
     }
   }
 
   // Generate output
   io.microOpOut.valid := outputValid && !io.flush
-  io.microOpOut.bits := stage2MicroOp
 
   io.table := busyTable.io.table
 }
