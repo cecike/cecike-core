@@ -2,6 +2,7 @@ package cecike
 
 import chisel3.internal.sourceinfo.SourceInfo
 import chisel3._
+import cecike.core.common.Constants.hasLog
 
 abstract class CecikeModule(implicit moduleCompileOptions: CompileOptions) extends Module {
   val moduleName = this.name
@@ -9,11 +10,15 @@ abstract class CecikeModule(implicit moduleCompileOptions: CompileOptions) exten
 
   object log {
     def apply(fmt: String, data: Bits*)(implicit sourceInfo: SourceInfo, compileOptions: CompileOptions): Unit = {
-      printf(prefix + fmt + "\n", data: _*)(sourceInfo, compileOptions)
+      when (hasLog) {
+        printf(prefix + fmt + "\n", data: _*)(sourceInfo, compileOptions)
+      }(sourceInfo, compileOptions)
     }
 
     def apply(pable: Printable)(implicit sourceInfo: SourceInfo, compileOptions: CompileOptions): Unit = {
-      printf(Printables(List(PString(prefix), pable, PString("\n"))))(sourceInfo, compileOptions)
+      when (hasLog) {
+        printf(Printables(List(PString(prefix), pable, PString("\n"))))(sourceInfo, compileOptions)
+      }(sourceInfo, compileOptions)
     }
 
     def apply(cond: Bool, fmt: String, data: Bits*)(implicit sourceInfo: SourceInfo, compileOptions: CompileOptions): Unit = {
