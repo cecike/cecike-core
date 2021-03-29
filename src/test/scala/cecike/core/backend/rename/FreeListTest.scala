@@ -8,11 +8,11 @@ class FreeListTest(c: FreeList) extends PeekPokeTester(c) {
   }
   expect(c.io.allocateResp.valid, true)
   expect(c.io.allocateResp.bits(0), 1)
-  expect(c.io.allocateResp.bits(1), 127)
+  expect(c.io.allocateResp.bits(1), 63)
   step(1)
   expect(c.io.allocateResp.valid, true)
   expect(c.io.allocateResp.bits(0), 2)
-  expect(c.io.allocateResp.bits(1), 126)
+  expect(c.io.allocateResp.bits(1), 62)
   for(i <- 0 until 2) {
     poke(c.io.allocateReq(i), false)
   }

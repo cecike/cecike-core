@@ -9,10 +9,8 @@ class MetaFrontendTest(c: Frontend) extends PeekPokeTester(c) {
 
   def pokeMemData(valid: Boolean, valid1: Boolean, bits1: BigInt, valid2: Boolean, bits2: BigInt) = {
     poke(memPort.valid, valid)
-    poke(memPort.bits(0).valid, valid1)
-    poke(memPort.bits(0).bits, bits1)
-    poke(memPort.bits(1).valid, valid2)
-    poke(memPort.bits(1).bits, bits2)
+    poke(memPort.bits(0), bits1)
+    poke(memPort.bits(1), bits2)
   }
   def clearMemData() = {
     poke(memPort.valid, false)

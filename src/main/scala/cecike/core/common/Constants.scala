@@ -12,7 +12,7 @@ object Constants {
   val instructionLen = 32
 
   val logicalRegisterNum = 32
-  val physicalRegisterNum = 128
+  val physicalRegisterNum = 64
 
   val logicalRegisterAddressWidth = log2Ceil(logicalRegisterNum)
   val physicalRegisterAddressWidth = log2Ceil(physicalRegisterNum)
@@ -29,13 +29,13 @@ object Constants {
   val branchTagWidth = log2Ceil(maxBranchCount)
 
   val robBankNum = decodeWidth
-  val robRowNum = 32
+  val robRowNum = 16
   val robEntryNum = robBankNum * robRowNum
   val robAddressWidth = log2Ceil(robEntryNum)
   val robRowAddressWidth = log2Ceil(robRowNum)
   val robBankAddressWidth = log2Ceil(robBankNum)
 
-  val commonQueueDepth = 16
+  val commonQueueDepth = 8
 
   val lsuQueueDepth = 16
   val lsuQueueAddressWidth = log2Ceil(lsuQueueDepth)

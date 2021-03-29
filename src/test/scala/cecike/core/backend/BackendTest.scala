@@ -16,7 +16,7 @@ class SimpleBackendTest(c: Backend) extends PeekPokeTester(c) {
   step(20)
   poke(c.io.debug.register.addr, 1)
   expect(c.io.debug.register.data, 1)
-  poke(c.io.debug.register.addr, 127)
+  poke(c.io.debug.register.addr, 63)
   expect(c.io.debug.register.data, 1)
 }
 

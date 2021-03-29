@@ -37,15 +37,19 @@ class Frontend extends CecikeModule {
 
   log("PC: %x HasMemReq: %d Bked not stall: %x", pc, hasMemReq, backendNotStall)
 
-  val instructionBundle = Wire(Vec(decodeWidth, new InstructionBundle))
-  for (i <- 0 until decodeWidth) {
-    val instruction = io.memoryRead.data.bits(i)
-    val bundle = instructionBundle(i)
-    bundle.pc := stagedPC + (i.U << 2.U)
-    bundle.valid := instruction.valid && io.memoryRead.data.valid
-    bundle.instruction := instruction.bits
-    bundle.branchPredictionInfo.taken := false.B
-    bundle.branchPredictionInfo.dest := DontCare
+  def instructionBundle() = {
+    val t = Wire(Vec(decodeWidth, new InstructionBundle))
+    for (i <- 0 until decodeWidth) {
+      val instruction = io.memoryRead.data.bits(i)
+      val bundle = t(i)
+      val pc: UInt = stagedPC + (i.U << 2.U)
+      bundle.pc := pc
+      bundle.valid := io.memoryRead.data.valid && !(i.U.orR() && stagedPC(cacheLineAddressWidth - 1, 2).andR())
+      bundle.instruction := instruction
+      bundle.branchPredictionInfo.taken := false.B
+      bundle.branchPredictionInfo.dest := DontCare
+    }
+    t
   }
 
   def wrappedNext(data: UInt) = {
