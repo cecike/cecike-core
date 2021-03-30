@@ -7,6 +7,7 @@ import cecike.core.frontend.Frontend
 import cecike.core.memory.tlb.TranslationLookasideBuffer
 import cecike.core.memory.{MemoryReadPort, MemoryWritePort}
 import chisel3._
+import chisel3.stage.ChiselGeneratorAnnotation
 import chisel3.util._
 
 class SimCoreIO extends Bundle {
@@ -44,4 +45,12 @@ class SimpleSimCore extends SimCore {
   backend.io.tlbQuery <> dummyTLB.io.query
 
   backend.io.debug.register.addr := 0.U
+}
+
+object SimpleSimCore {
+  def main(args: Array[String]): Unit = {
+    (new chisel3.stage.ChiselStage).execute(
+      Array("-X", "verilog"),
+      Seq(ChiselGeneratorAnnotation(() => new SimpleSimCore)))
+  }
 }
