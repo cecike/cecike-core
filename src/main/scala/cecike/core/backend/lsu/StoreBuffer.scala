@@ -51,6 +51,7 @@ class StoreBuffer extends CecikeModule {
   def empty = head === tail
   def full = (tail + 1.U) === head
   def nothingToCommit = commit === tail
+  def nothingToWrite = head === commit
 
   io.existencePort.exist := buffer.map { p =>
     (p.valid || p.commit) &&
@@ -81,7 +82,7 @@ class StoreBuffer extends CecikeModule {
     io.readyROB.valid := true.B
   }
 
-  io.storeInfo.valid := !empty
+  io.storeInfo.valid := !nothingToWrite
   io.storeInfo.bits := buffer(head).info
 
   when (io.storeInfo.fire()) {
