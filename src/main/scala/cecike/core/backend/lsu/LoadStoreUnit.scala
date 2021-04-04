@@ -1,5 +1,6 @@
 package cecike.core.backend.lsu
 
+import cecike.CecikeModule
 import cecike.core.backend.register.RegisterFileWritePort
 import chisel3._
 import chisel3.util._
@@ -25,7 +26,7 @@ class LoadStoreUnitIO extends Bundle {
   val storeCommit = Input(Bool())
 }
 
-class LoadStoreUnit extends Module {
+class LoadStoreUnit extends CecikeModule {
   val io = IO(new LoadStoreUnitIO)
 
   // TODO: ...
@@ -66,10 +67,9 @@ class LoadStoreUnit extends Module {
   storeBuffer.io.storeCommit := io.storeCommit
   storeBuffer.io.storeInfo <> io.memoryWrite.storeInfo
 
+  io.agu.readyROB := storeBuffer.io.readyROB
   when (loadFromMemoryFSM.io.readyROB.valid) {
     io.agu.readyROB := loadFromMemoryFSM.io.readyROB
-  } otherwise {
-    io.agu.readyROB := storeBuffer.io.readyROB
   }
 
   loadFromMemoryFSM.io.memoryRead <> io.memoryRead

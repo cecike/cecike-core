@@ -68,6 +68,7 @@ class StoreBuffer extends CecikeModule {
       bufferTail.valid := true.B
       bufferTail.info.addressInfo := io.lsuEntry.bits.aguInfo.address
       bufferTail.info.data := io.lsuEntry.bits.aguInfo.data
+      bufferTail.robIndex := io.lsuEntry.bits.aguInfo.opInfo.robIndex
       tail := tail + 1.U
     }
   }

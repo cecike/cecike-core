@@ -2,9 +2,10 @@ package cecike
 
 import chisel3.internal.sourceinfo.SourceInfo
 import chisel3._
-import cecike.core.common.Constants.hasLog
+import cecike.core.common.Constants
 
 abstract class CecikeModule(implicit moduleCompileOptions: CompileOptions) extends Module {
+  val hasLog = Constants.hasLog
   val moduleName = this.name
   val prefix = ":[" + moduleName + "]: "
 

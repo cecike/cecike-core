@@ -24,7 +24,7 @@ class RawBRU extends Module {
   val src1 = io.src1
   val src2 = io.src2
 
-  val branchPC = io.pc + (io.offset << 1)
+  val branchPC = io.pc + io.offset
   io.resultPC.bits := Mux(op(BRUOp.J), src1, branchPC)
 
   io.result.valid := op(BRUOp.J)

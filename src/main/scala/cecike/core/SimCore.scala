@@ -38,7 +38,7 @@ class SimpleSimCore extends SimCore {
 
   frontend.io.backendPC := backend.io.pc
   frontend.io.branchInfo := backend.io.branchInfo
-
+  
   backend.io.memoryRead <> io.dRead
   backend.io.memoryWrite <> io.dWrite
   backend.io.instruction <> frontend.io.instruction

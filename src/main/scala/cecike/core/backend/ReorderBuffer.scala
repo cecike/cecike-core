@@ -119,20 +119,21 @@ class ReorderBuffer extends CecikeModule {
   log(flushEntryIndex.valid, "Change PC to: %x", io.pc.bits)
 
   // store valid
-  val previousMicroOpDone = Wire(Vec(decodeWidth, Bool()))
-  previousMicroOpDone(0) := true.B
-  for (i <- 1 until decodeWidth) {
-    previousMicroOpDone(i) := previousMicroOpDone(i - 1) && currentEntry().microOp(i).done
+  def previousMicroOpDone(i: Int): Bool = {
+    if (i == 0) {
+      true.B
+    } else {
+      previousMicroOpDone(i - 1) && currentEntry().microOp(i - 1).done
+    }
   }
 
-  val storeCommitValid = Wire(Vec(decodeWidth, Bool()))
-  for (i <- 0 until decodeWidth) {
+  def storeCommitValid(i: Int): Bool = {
     val mop = currentEntry().microOp(i)
-    storeCommitValid(i) := mop.valid &&
+    mop.valid &&
       !mop.done && mop.isStoreOp &&
       !flushMask(i) && previousMicroOpDone(i)
   }
-  io.storeCommit := storeCommitValid.reduce(_||_)
+  io.storeCommit := (0 until decodeWidth).map(storeCommitValid).reduce(_||_)
 
   // Store branch info
   when (io.branchInfo.valid) {

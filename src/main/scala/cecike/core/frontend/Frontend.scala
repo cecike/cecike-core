@@ -110,5 +110,6 @@ class Frontend extends CecikeModule {
   }
 
   log(io.memoryRead.data.valid, "Got data for %x", stagedPC)
-  log(io.instruction.fire(), "Instruction at %x fired", io.instruction.bits(0).pc)
+  log(io.instruction.fire(), "Instruction at %x fired %x %x",
+    io.instruction.bits(0).pc, io.instruction.bits(0).instruction, io.instruction.bits(1).instruction)
 }
