@@ -90,4 +90,6 @@ class StoreBuffer extends CecikeModule {
     buffer(head).commit := false.B
     head := head + 1.U
   }
+
+  log(p"Head $head Commit $commit Tail $tail")
 }

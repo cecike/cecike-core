@@ -96,7 +96,8 @@ class ReorderBuffer extends CecikeModule {
   val flushMask = Wire(Vec(decodeWidth, Bool()))
   flushMask(0) := currentEntry().microOp(0).needFlush() || incomeFlush(0)
   for (i <- 1 until decodeWidth) {
-    flushMask(i) := flushMask(i - 1) || currentEntry().microOp(i).needFlush() || incomeFlush(i)
+    flushMask(i) := flushMask(i - 1) ||
+      ((currentEntry().microOp(i).needFlush() || incomeFlush(i)) && previousMicroOpDone(i))
   }
   val needFlush = flushMask(decodeWidth - 1)
   io.flush := needFlush
