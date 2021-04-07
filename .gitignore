@@ -4,6 +4,7 @@
 /*.v
 Example.*
 ExampleTest.*
+run_on_verilator/*build*
 ### IDEA
 .idea/
 ### sbt

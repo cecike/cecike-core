@@ -4,3 +4,4 @@ rm -rf *.anno.json
 rm -rf *.v
 rm -rf *.fir
 rm -rf test_run_dir/*
+rm -rf run_on_verilator/*build*
