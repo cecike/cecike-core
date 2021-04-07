@@ -154,7 +154,9 @@ object Rv64InstructionTable extends CommonInstructionTable {
       "b00000" -> RvLoadInstructionTable(i),
       "b01000" -> RvStoreInstructionTable(i),
       "b01101" -> CS.ok(U, FU_ALU, ALUOp.LUI, F, F, T),
-      "b00101" -> CS.ok(U, FU_ALU, ALUOp.AUIPC, F, F, T)
+      "b00101" -> CS.ok(U, FU_ALU, ALUOp.AUIPC, F, F, T),
+      "b11001" -> CS.ok(I, FU_BRU, BRUOp.JR, T, F, T), // JALR
+      "b11011" -> CS.ok(J, FU_BRU, BRUOp.J, F, F, T) // JAL
     ).map(p => (BitPat(p._1), p._2))
 
     val (valid, cs) = BinaryMuxLookUp(opcode(i), table)

@@ -25,9 +25,11 @@ class RawBRU extends Module {
   val src2 = io.src2
 
   val branchPC = io.pc + io.offset
-  io.resultPC.bits := Mux(op(BRUOp.J), src1, branchPC)
+  io.resultPC.bits := Mux(op(BRUOp.JR),
+    branchPC(xLen - 1, 1) ## false.B,
+    Mux(op(BRUOp.J), src1, branchPC))
 
-  io.result.valid := op(BRUOp.J)
+  io.result.valid := op(BRUOp.J) || op(BRUOp.JR)
   io.result.bits := io.pc + 4.U
 
   val eq = src1 === src2

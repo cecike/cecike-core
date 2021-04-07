@@ -150,6 +150,7 @@ object Constants {
     val GE = op(5)
     val LTU = op(6)
     val GEU = op(7)
+    val JR = op(8)
 
     def op(data: Int) = {
       data.U(bruOpWidth.W)
