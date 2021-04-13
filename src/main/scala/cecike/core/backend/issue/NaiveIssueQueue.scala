@@ -63,8 +63,9 @@ class NaiveIssueQueue(fuNum: Int, depth: Int) extends IssueQueue(fuNum, depth) {
       when (entry.valid) {
         queueEntries(entry.bits).valid := false.B
       }
-      log(entry.valid, "Select mOp at %d to port %d", entry.bits, i.U)
-      log(!entry.valid, "Select invalid mOp at %d to port %d", entry.bits, i.U)
+      val pc = queueEntries(entry.bits).bits.pc
+      log(entry.valid, "Select mOp %x at %d to port %d", pc, entry.bits, i.U)
+      log(!entry.valid, "Select invalid mOp %x at %d to port %d", pc, entry.bits, i.U)
     }
   }
 
@@ -74,7 +75,8 @@ class NaiveIssueQueue(fuNum: Int, depth: Int) extends IssueQueue(fuNum, depth) {
     queueEntries(entry.bits).valid := io.microOpIn.fire() &&
       io.microOpIn.bits(i).valid && entry.valid
     log(io.microOpIn.fire() &&
-      io.microOpIn.bits(i).valid && entry.valid, p"Write new mOp to ${entry.bits}")
+      io.microOpIn.bits(i).valid && entry.valid, "Write new mOp %x to %x",
+      io.microOpIn.bits(i).bits.pc, entry.bits)
   }
 
   for (i <- 0 until fuNum) {

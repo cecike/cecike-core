@@ -1,5 +1,6 @@
 package cecike.core.backend.execution.raw
 
+import cecike.CecikeModule
 import chisel3._
 import chisel3.util._
 import cecike.core.common.Constants._
@@ -13,7 +14,7 @@ class RawALUIO extends Bundle {
   val result = Output(UInt(xLen.W))
 }
 
-class RawALU extends Module {
+class RawALU extends CecikeModule {
   val io = IO(new RawALUIO)
 
   val op = UIntToOH(io.op)

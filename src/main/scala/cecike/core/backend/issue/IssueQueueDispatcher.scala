@@ -1,5 +1,6 @@
 package cecike.core.backend.issue
 
+import cecike.CecikeModule
 import chisel3._
 import chisel3.util._
 import cecike.core.common.Constants._
@@ -14,22 +15,25 @@ class IssueQueueDispatcherIO extends Bundle {
   val robMicroOpOut = EnqIO(Vec(decodeWidth, new MicroOp))
 }
 
-class IssueQueueDispatcher extends Module {
+class IssueQueueDispatcher extends CecikeModule {
   val io = IO(new IssueQueueDispatcherIO)
 
   assert(!io.acceptFuTypes.reduce(_&_).orR(), "Accepted fu types should be disjoint")
 
   for (i <- 0 until issueClusterNum) {
-    val t = Wire(Vec(decodeWidth, Valid(new IssueMicroOp)))
+    def iOp(j: Int): Valid[IssueMicroOp] = {
+      val t = Wire(Valid(new IssueMicroOp))
+      val issueMicroOp = IssueMicroOp(io.microOpIn.bits(j))
+      t.bits := issueMicroOp
+      t.bits.robIndex := io.currentROBAddressBase + j.U
+      t.valid := (issueMicroOp.fuType & io.acceptFuTypes(i)).orR() &&
+        io.microOpIn.bits(j).valid
+      t
+    }
 
     for (j <- 0 until decodeWidth) {
-      val issueMicroOp = IssueMicroOp(io.microOpIn.bits(j))
-      t(j).bits := issueMicroOp
-      t(j).bits.robIndex := io.currentROBAddressBase + j.U
-      t(j).valid := (issueMicroOp.fuType & io.acceptFuTypes(i)).orR() &&
-        io.microOpIn.bits(j).valid
+      io.microOpOut(i).bits(j) := iOp(j)
     }
-    io.microOpOut(i).bits := t
   }
   io.robMicroOpOut.bits := io.microOpIn.bits
 

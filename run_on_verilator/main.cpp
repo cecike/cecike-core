@@ -11,6 +11,6 @@ int main(int argc, char **argv) {
     }
     Simulator s(argv[1]);
     s.reset(10);
-    s.step(100);
+    s.step(169);
     return 0;
 }

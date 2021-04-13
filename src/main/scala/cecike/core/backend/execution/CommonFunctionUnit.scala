@@ -27,9 +27,9 @@ class CommonFunctionUnit(hasALU: Boolean, hasBRU: Boolean) extends
   when (reset.asBool || io.flush) {
     stage2MicroOp.valid := false.B
   } otherwise {
-    stage2MicroOp := microOpIn
+    stage2MicroOp.valid := microOpIn.valid
+    stage2MicroOp.bits := microOpIn.bits
   }
-
   val op = stage2MicroOp.bits
   val opValid = stage2MicroOp.valid
 

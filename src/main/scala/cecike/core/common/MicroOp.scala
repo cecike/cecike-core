@@ -88,7 +88,8 @@ class MicroOp extends Bundle {
 
 object MicroOp {
   def apply() = {
-    val microOp = WireDefault(new MicroOp, DontCare)
+    val microOp = Wire(new MicroOp)
+    microOp := DontCare
 
     microOp.valid := false.B
     microOp.controlSignal.instType := InstructionType.IX
@@ -98,7 +99,8 @@ object MicroOp {
   }
 
   def apply(valid: Bool, pc: UInt, instruction: UInt, branchPredictionInfo: BranchPredictionInfo) = {
-    val microOp = WireDefault(new MicroOp, DontCare)
+    val microOp = Wire(new MicroOp)
+    microOp := DontCare
 
     microOp.valid := valid
     microOp.pc := pc

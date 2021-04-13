@@ -44,7 +44,8 @@ class Frontend extends CecikeModule {
       val bundle = t(i)
       val pc: UInt = stagedPC + (i.U << 2.U)
       bundle.pc := pc
-      bundle.valid := io.memoryRead.data.valid && !(i.U.orR() && stagedPC(cacheLineAddressWidth - 1, 2).andR())
+      bundle.valid := io.memoryRead.data.valid &&
+        (stagedPC(xLen - 1, cacheLineAddressWidth) === pc(xLen - 1, cacheLineAddressWidth))
       bundle.instruction := instruction
       bundle.branchPredictionInfo.taken := false.B
       bundle.branchPredictionInfo.dest := DontCare
@@ -110,6 +111,7 @@ class Frontend extends CecikeModule {
   }
 
   log(io.memoryRead.data.valid, "Got data for %x", stagedPC)
+  log(p"A - ${io.instruction.bits}")
   log(io.instruction.fire(), "Instruction at %x fired %x %x",
     io.instruction.bits(0).pc, io.instruction.bits(0).instruction, io.instruction.bits(1).instruction)
 }
