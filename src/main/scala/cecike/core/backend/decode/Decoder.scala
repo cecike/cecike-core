@@ -21,9 +21,10 @@ class Decoder extends CecikeModule {
 
   val decodedMicroOp = WireDefault(io.microOpIn.bits)
   for (i <- 0 until decodeWidth) {
-    decodedMicroOp(i).controlSignal := Rv64InstructionTable(io.microOpIn.bits(i).instruction)
+    val cs = Rv64InstructionTable(io.microOpIn.bits(i).instruction)
+    decodedMicroOp(i).controlSignal := cs
     decodedMicroOp(i).controlSignal.immediate := CS.immediate(io.microOpIn.bits(i).instruction,
-      decodedMicroOp(i).controlSignal.instType)
+      cs.instType)
   }
 
   io.microOpIn.ready := false.B
@@ -39,4 +40,5 @@ class Decoder extends CecikeModule {
 
   io.microOpOut.bits := microOpReg
   io.microOpOut.valid := microOpRegValid && !io.flush
+  log("%x", io.microOpOut.bits(0).immediate())
 }

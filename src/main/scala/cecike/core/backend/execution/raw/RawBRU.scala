@@ -1,5 +1,6 @@
 package cecike.core.backend.execution.raw
 
+import cecike.CecikeModule
 import chisel3._
 import chisel3.util._
 import cecike.core.common.Constants._
@@ -17,7 +18,7 @@ class RawBRUIO extends Bundle {
 }
 
 // TODO: Support `C` extension
-class RawBRU extends Module {
+class RawBRU extends CecikeModule {
   val io = IO(new RawBRUIO)
 
   val op = Mux(io.valid, UIntToOH(io.op), OHToUInt(BRUOp.BX))
@@ -25,9 +26,8 @@ class RawBRU extends Module {
   val src2 = io.src2
 
   val branchPC = io.pc + io.offset
-  io.resultPC.bits := Mux(op(BRUOp.JR),
-    branchPC(xLen - 1, 1) ## false.B,
-    Mux(op(BRUOp.J), src1, branchPC))
+  val jrPC = io.src1 + io.offset
+  io.resultPC.bits := Mux(op(BRUOp.JR), jrPC, branchPC)
 
   io.result.valid := op(BRUOp.J) || op(BRUOp.JR)
   io.result.bits := io.pc + 4.U
