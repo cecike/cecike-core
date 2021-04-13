@@ -32,9 +32,9 @@ class IssueQueueDispatcher extends Module {
     io.microOpOut(i).bits := t
   }
   io.robMicroOpOut.bits := io.microOpIn.bits
-  io.robMicroOpOut.valid := io.microOpIn.valid
 
   val ready = io.microOpOut.map(_.ready).reduce(_&&_) && io.robMicroOpOut.ready
   io.microOpIn.ready := ready
   io.microOpOut.foreach(_.valid := ready && io.microOpIn.valid)
+  io.robMicroOpOut.valid := io.microOpIn.valid && ready
 }

@@ -55,7 +55,8 @@ class CommonFunctionUnit(hasALU: Boolean, hasBRU: Boolean) extends
   bru.io.src2 := src2
   val bruResult = bru.io.result.bits
   val mispredictedTaken = bru.io.resultPC.valid =/= op.branchPredictionInfo.taken
-  val mispredictedDest = bru.io.resultPC.bits =/= op.branchPredictionInfo.dest
+  val mispredictedDest = op.branchPredictionInfo.taken &&
+    bru.io.resultPC.bits =/= op.branchPredictionInfo.dest
   if (hasBRU) {
     io.branchInfo.mispredicted := mispredictedTaken || mispredictedDest
     io.branchInfo.taken := bru.io.resultPC.valid

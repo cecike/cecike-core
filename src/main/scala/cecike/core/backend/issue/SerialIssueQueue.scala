@@ -41,6 +41,7 @@ class SerialIssueQueue(depth: Int) extends IssueQueue(1, depth) {
 
   val outputEntry = queueEntries(queueManager.io.head)
   val readyToIssue = !io.flush &&
+    !queueManager.io.empty &&
     outputEntry.valid &&
     !io.busyTable(outputEntry.bits.rs1Info.addr) &&
     !io.busyTable(outputEntry.bits.rs2Info.addr)
