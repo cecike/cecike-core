@@ -51,4 +51,5 @@ class RawBRU extends CecikeModule {
   )
 
   io.resultPC.valid := Mux1H(pcValidTable)
+  log("%x %x %x %b", io.pc,src1, src2, Mux1H(pcValidTable))
 }

@@ -37,18 +37,18 @@ class MapTable extends CecikeModule {
   io.rdReadPort.foreach(p => p.physicalAddr := Mux(p.logicalAddr.orR(), currentMapTable(p.logicalAddr), 0.U))
 
   io.rdCommitPort.foreach(p => when (p.valid) {
-    architecturalMapTable.write(p.logicalAddr, p.physicalAddr)
+    architecturalMapTable(p.logicalAddr) := p.physicalAddr
     log("archMap[%d] = %d", p.logicalAddr, p.physicalAddr)
   })
 
   val flush = RegNext(io.flush)
   when (flush) {
     for (i <- 0 until logicalRegisterNum) {
-      currentMapTable.write(i.U, architecturalMapTable(i.U))
+      currentMapTable(i.U) := architecturalMapTable(i.U)
     }
   } otherwise {
     io.rdWritePort.foreach(p => when (p.valid) {
-      currentMapTable.write(p.logicalAddr, p.physicalAddr)
+      currentMapTable(p.logicalAddr) := p.physicalAddr
       log("phyMap[%d] = %d", p.logicalAddr, p.physicalAddr)
     })
   }

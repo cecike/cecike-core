@@ -28,14 +28,10 @@ class Frontend extends CecikeModule {
     stagedInstruction.valid := false.B
   }
 
-  val memReqPending = hasMemReq && !io.memoryRead.data.valid
-  val memReqDone = hasMemReq && io.memoryRead.data.valid
-
-  val stagedInstructionInvalid = io.backendPC.valid || stagedBackendPC.valid
-  val backendNotStall = !stagedInstruction.valid || io.instruction.fire() || stagedInstructionInvalid
-  val backendStall = !backendNotStall
-
-  log("PC: %x HasMemReq: %d Bked not stall: %x", pc, hasMemReq, backendNotStall)
+  val s_idle :: s_wait :: s_wait_kill :: s_wait_send :: Nil = Enum(4)
+  val state = RegInit(s_idle)
+  val nextState = Wire(UInt(2.W))
+  nextState := s_idle
 
   def instructionBundle() = {
     val t = Wire(Vec(decodeWidth, new InstructionBundle))
@@ -68,50 +64,103 @@ class Frontend extends CecikeModule {
   io.memoryRead.addressInfo.valid := false.B
   io.memoryRead.addressInfo.bits.address := 0.U
   io.memoryRead.addressInfo.bits.compact := false.B
-  when (
-    (!hasMemReq && backendNotStall) ||
-      (memReqDone && io.instruction.fire())) {
-    log("Issue a new req for pc %x", realPC)
-    // Issue a new memory req
-    io.memoryRead.addressInfo.valid := true.B
-    io.memoryRead.addressInfo.bits.address := realPC
-    hasMemReq := true.B
+  io.instruction.valid := false.B
+  io.instruction.bits := DontCare
 
-    // Clear old state
-    stagedBackendPC.valid := false.B
-
-    // Set new pc and backup old pc
-    pc := wrappedNext(realPC)
-    stagedPC := realPC
-  } otherwise {
-    when (io.backendPC.valid) {
-      log("Got a backend pc change")
-      stagedBackendPC := io.backendPC
+  switch(state) {
+    is(s_idle) {
+      issueNewReq()
+      nextState := s_wait
     }
 
-    // fucking backend stall
-    when (memReqDone && !io.instruction.fire()) {
-      log("Backend is full")
-      hasMemReq := false.B
-      stagedInstruction.bits := instructionBundle
-      stagedInstruction.valid := true.B
+    is(s_wait) {
+      when (io.memoryRead.data.valid) {
+        when (io.backendPC.valid) {
+          log("1")
+          issueNewReq()
+          nextState := s_wait
+        } otherwise {
+          when (io.instruction.ready) {
+            log("2")
+            io.instruction.valid := true.B
+            io.instruction.bits := instructionBundle()
+            issueNewReq()
+            nextState := s_wait
+          } otherwise {
+            log("3")
+            stagedInstruction.valid := true.B
+            stagedInstruction.bits := instructionBundle()
+            nextState := s_wait_send
+          }
+        }
+      } otherwise {
+        when (io.backendPC.valid) {
+          log("4")
+          keepReq()
+          stagedBackendPC := io.backendPC
+          nextState := s_wait_kill
+        } otherwise {
+          log("5")
+          keepReq()
+          nextState := s_wait
+        }
+      }
+    }
+
+    is(s_wait_kill) {
+      keepReq()
+      when (io.memoryRead.data.valid) {
+        nextState := s_idle
+      } otherwise {
+        nextState := s_wait_kill
+      }
+    }
+
+    is(s_wait_send) {
+      when (io.backendPC.valid) {
+        stagedBackendPC.valid := false.B
+        issueNewReq()
+        nextState := s_wait
+      } otherwise {
+        when (io.instruction.ready) {
+          io.instruction.valid := stagedInstruction.valid
+          io.instruction.bits := stagedInstruction.bits
+          stagedInstruction.valid := false.B
+          issueNewReq()
+          nextState := s_wait
+        } otherwise {
+          nextState := s_wait_send
+        }
+      }
     }
   }
 
-  io.instruction.valid := memReqDone
-  io.instruction.bits := instructionBundle
-  when (stagedInstruction.valid) {
-    log("Use staged instructions")
-    io.instruction.valid := stagedInstruction.valid
-    io.instruction.bits := stagedInstruction.bits
-    when (io.instruction.fire()) {
-      log("Staged instruction clear")
-      stagedInstruction.valid := false.B
-    }
+  state := nextState
+
+  def issueNewReq(): Unit = {
+    log("Issue a new req for %x", realPC)
+    io.memoryRead.addressInfo.valid := true.B
+    io.memoryRead.addressInfo.bits.address := realPC
+    io.memoryRead.addressInfo.bits.compact := false.B
+
+    pc := wrappedNext(realPC)
+    stagedPC := realPC
+    stagedBackendPC.valid := false.B
+  }
+
+  def keepReq() = {
+    io.memoryRead.addressInfo.valid := true.B
+    io.memoryRead.addressInfo.bits.address := stagedPC
+    io.memoryRead.addressInfo.bits.compact := false.B
   }
 
   log(io.memoryRead.data.valid, "Got data for %x", stagedPC)
-  log(p"A - ${io.instruction.bits}")
-  log(io.instruction.fire(), "Instruction at %x fired %x %x",
-    io.instruction.bits(0).pc, io.instruction.bits(0).instruction, io.instruction.bits(1).instruction)
+  log(p"$state $nextState")
+  log(io.instruction.fire(), "Instruction at %x fired %x - %b %x - %b",
+    io.instruction.bits(0).pc,
+    io.instruction.bits(0).instruction,
+    io.instruction.bits(0).valid,
+    io.instruction.bits(1).instruction,
+    io.instruction.bits(1
+    ).valid)
 }

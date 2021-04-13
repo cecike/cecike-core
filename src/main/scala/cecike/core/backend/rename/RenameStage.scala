@@ -116,7 +116,7 @@ class RenameStage extends CecikeModule {
   val microOpRegNext = Wire(Vec(decodeWidth, new MicroOp))
 
   // Default value
-  outputValidNext := io.microOpIn.fire()
+  outputValidNext := !io.flush && io.microOpIn.fire()
   microOpRegNext := stage1MicroOp
 
   // Update register when no external stall
@@ -174,4 +174,11 @@ class RenameStage extends CecikeModule {
   io.microOpOut.valid := outputValid && !io.flush
 
   io.table := busyTable.io.table
+  for (i <- 0 until decodeWidth) {
+    val t = io.microOpOut.bits(i)
+    log("Map %x: %d -> %d %d -> %d %d -> %d", t.pc,
+      t.rs1(), t.physicalRs1,
+      t.rs2(), t.physicalRs2,
+      t.rd(), t.physicalRd)
+  }
 }

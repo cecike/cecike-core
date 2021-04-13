@@ -45,4 +45,5 @@ class RawALU extends CecikeModule {
   )
 
   io.result := Mux1H(resultTable)
+  log("%x %x %x %x", io.pc, src1, src2, Mux1H(resultTable))
 }

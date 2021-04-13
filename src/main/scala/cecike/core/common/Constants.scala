@@ -49,7 +49,7 @@ object Constants {
   val pcInitLitValue = BigInt("80000000", 16)
   val pcInitValue = pcInitLitValue.U(xLen.W)
 
-  val verboseTest = false
+  val verboseTest = true
 
   object TF {
     val T = true.B

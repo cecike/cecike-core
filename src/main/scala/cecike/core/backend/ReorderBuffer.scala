@@ -88,7 +88,7 @@ class ReorderBuffer extends CecikeModule {
   val commit = nonEmpty(readyToCommit, false.B)
 
   bufferManager.io.deallocate(0) := commit
-  log(commit, p"Commit $bufferHead")
+  log(commit, "Commit %d - %x", bufferHead, currentEntry().basePC)
 
   val incomeFlush = (io.branchInfo.valid && io.branchInfo.mispredicted &&
     rowAddress(io.branchInfo.robIndex) === bufferHead) << bankAddress(io.branchInfo.robIndex)
@@ -118,6 +118,7 @@ class ReorderBuffer extends CecikeModule {
   log("Cat flush mask: %x", flushMaskCat)
   log(flushEntryIndex.valid, "Flush entry: %d", flushEntryIndex.bits)
   log(flushEntryIndex.valid, "Change PC to: %x", io.pc.bits)
+  log(needFlush, p"${currentEntry()}")
 
   // store valid
   def previousMicroOpDone(i: Int): Bool = {
@@ -155,6 +156,7 @@ class ReorderBuffer extends CecikeModule {
     bufferFlushed := Mux(needFlush, (~0.U).asUInt, bufferFlushed & (~UIntToOH(bufferTail)).asUInt)
     buffer(bufferTail).microOp := VecInit(io.microOpIn.bits.map(ROBMicroOp(_)))
     buffer(bufferTail).basePC := io.microOpIn.bits(0).pc
+    log("Write %x to %d", io.microOpIn.bits(0).pc, bufferTail)
   } otherwise {
     when (needFlush) {
       bufferFlushed := (~0.U).asUInt

@@ -41,6 +41,7 @@ class BackendPCFrontendTest(c: Frontend) extends MetaFrontendTest(c) {
   expect(c.io.memoryRead.addressInfo.valid, true)
   expect(c.io.memoryRead.addressInfo.bits.address, 114514)
   step(1)
+  poke(c.io.backendPC.valid, false)
   pokeMemData(true, true, 114514, true, 1919810)
   expect(c.io.instruction.valid, true)
   expect(c.io.instruction.bits(0).valid, true)
@@ -81,7 +82,7 @@ class BackendStallFrontendTest(c: Frontend) extends MetaFrontendTest(c) {
   step(1)
   pokeMemData(true, true, 114514, true, 1919810)
   poke(c.io.instruction.ready, false)
-  expect(c.io.instruction.valid, true)
+  expect(c.io.instruction.valid, false)
   expect(c.io.instruction.bits(0).valid, true)
   expect(c.io.instruction.bits(0).instruction, 114514)
   expect(c.io.instruction.bits(0).pc, pcInitValue)
@@ -90,7 +91,7 @@ class BackendStallFrontendTest(c: Frontend) extends MetaFrontendTest(c) {
   expect(c.io.instruction.bits(1).pc, pcInitLitValue + 4)
   expect(c.io.memoryRead.addressInfo.valid, false.B)
   step(3)
-  expect(c.io.instruction.valid, true)
+  expect(c.io.instruction.valid, false)
   expect(c.io.instruction.bits(0).valid, true)
   expect(c.io.instruction.bits(0).instruction, 114514)
   expect(c.io.instruction.bits(0).pc, pcInitValue)
@@ -120,6 +121,7 @@ class FrontendTester extends ChiselFlatSpec {
   }
 
   for (backendName <- backendNames) {
+
     "Frontend" should s"works fine with example input instructions (with $backendName)" in {
       Driver(() => new Frontend, backendName, verbose = verboseTest) {
         c => new SimpleFrontendTest(c)
