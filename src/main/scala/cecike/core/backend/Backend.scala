@@ -56,7 +56,7 @@ class Backend extends CecikeModule {
   decoder.io.microOpIn.valid := io.instruction.valid
   io.instruction.ready := decoder.io.microOpIn.ready
   for (i <- 0 until decodeWidth) {
-    decoder.io.microOpIn.bits(i) := MicroOp(io.instruction.bits(i))
+    decoder.io.microOpIn.bits(i) := MicroOp(io.instruction.bits(i), io.instruction.valid && io.instruction.bits(i).valid)
   }
 
   rename.io.microOpIn <> decoder.io.microOpOut

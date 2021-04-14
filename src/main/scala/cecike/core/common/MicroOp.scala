@@ -111,6 +111,8 @@ object MicroOp {
   }
 
   def apply(bundle: InstructionBundle): MicroOp = apply(bundle.valid, bundle.pc, bundle.instruction, bundle.branchPredictionInfo)
+  def apply(bundle: InstructionBundle, valid: Bool): MicroOp = apply(bundle.valid, bundle.pc,
+    Mux(valid, bundle.instruction, 0.U), bundle.branchPredictionInfo)
 }
 
 class InstructionBundle extends Bundle {

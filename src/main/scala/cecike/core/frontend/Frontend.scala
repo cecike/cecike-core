@@ -15,30 +15,38 @@ class FrontEndIO extends Bundle {
   val memoryRead = new InstructionMemoryReadPort
 }
 
+// States -
+// idle: Issue a new memreq forever
+// wait: wait for mem resp
+// wait_kill: wait to kill current mem req
+// wait_send: wait to send result to backend
 class Frontend extends CecikeModule {
+  override val hasLog = true.B
   val io = IO(new FrontEndIO)
 
   val pc = RegInit(pcInitValue)
   val hasMemReq = RegInit(false.B)
   val stagedPC = Reg(UInt(xLen.W))
-  val stagedBackendPC = Reg(Valid(UInt(xLen.W)))
+  val stagedBackendPC = Reg(UInt(xLen.W))
+  val stagedBackendPCValid = RegInit(false.B)
   val stagedInstruction = Reg(Valid(Vec(decodeWidth, new InstructionBundle)))
-  when (reset.asBool()) {
-    stagedBackendPC.valid := false.B
-    stagedInstruction.valid := false.B
-  }
+  val stagedInstructionValid = RegInit(false.B)
 
   val s_idle :: s_wait :: s_wait_kill :: s_wait_send :: Nil = Enum(4)
   val state = RegInit(s_idle)
-  val nextState = Wire(UInt(2.W))
+  val nextState = WireDefault(s_idle)
   nextState := s_idle
+
+  def cacheLineEqual(a: UInt, b: UInt) = {
+    a(xLen - 1, cacheLineAddressWidth) === b(xLen - 1, cacheLineAddressWidth)
+  }
 
   def instructionBundle(i: Int) = {
       val instruction = io.memoryRead.data.bits(i)
       val bundle = Wire(new InstructionBundle)
       val pc: UInt = stagedPC + (i.U << 2.U)
       bundle.pc := pc
-      bundle.valid := (stagedPC(xLen - 1, cacheLineAddressWidth) === pc(xLen - 1, cacheLineAddressWidth))
+      bundle.valid := cacheLineEqual(pc, stagedPC)
       bundle.instruction := instruction
       bundle.branchPredictionInfo.taken := false.B
       bundle.branchPredictionInfo.dest := DontCare
@@ -48,11 +56,10 @@ class Frontend extends CecikeModule {
   def wrappedNext(data: UInt) = {
     val directNext = data + 8.U
     val crossLineNext = directNext(xLen - 1, cacheLineAddressWidth) ## 0.U(cacheLineAddressWidth.W)
-    val crossCacheLine = directNext(xLen - 1, cacheLineAddressWidth) =/= data(xLen - 1, cacheLineAddressWidth)
-    Mux(crossCacheLine, crossLineNext, directNext)
+    Mux(cacheLineEqual(directNext, data), directNext, crossLineNext)
   }
 
-  val realPC = Mux(stagedBackendPC.valid, stagedBackendPC.bits,
+  def realPC = Mux(stagedBackendPCValid, stagedBackendPC,
     Mux(io.backendPC.valid,
       io.backendPC.bits, pc))
   log("Real PC: %x, next: %x", realPC, wrappedNext(realPC))
@@ -90,7 +97,8 @@ class Frontend extends CecikeModule {
       } .elsewhen(io.backendPC.valid) {
         //log("4")
         keepReq()
-        stagedBackendPC := io.backendPC
+        stagedBackendPCValid := true.B
+        stagedBackendPC := io.backendPC.bits
         nextState := s_wait_kill
       } .otherwise {
         //log("5")
@@ -110,7 +118,6 @@ class Frontend extends CecikeModule {
 
     is(s_wait_send) {
       when (io.backendPC.valid) {
-        stagedBackendPC.valid := false.B
         issueNewReq()
         nextState := s_wait
       } otherwise {
@@ -130,14 +137,14 @@ class Frontend extends CecikeModule {
   state := nextState
 
   def issueNewReq(): Unit = {
-    //log("Issue a new req for %x", realPC)
+    log("Issue a new req for %x", realPC)
     io.memoryRead.addressInfo.valid := true.B
     io.memoryRead.addressInfo.bits.address := realPC
     io.memoryRead.addressInfo.bits.compact := false.B
 
     pc := wrappedNext(realPC)
     stagedPC := realPC
-    stagedBackendPC.valid := false.B
+    stagedBackendPCValid := false.B
   }
 
   def keepReq() = {

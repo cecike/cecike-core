@@ -8,12 +8,11 @@ void Simulator::reset(uint64_t cycles) {
 
 void Simulator::step(uint64_t cycles) {
     for (uint64_t i = 0; i < cycles; i ++) {
-        //printf("Step %llu --\n", i);
+        printf("Step %llu --\n", i);
         c->clock = 1;
         c->eval();
         c->clock = 0;
         c->eval();
-        check_bus();
 
         if (halt) {
             return;
@@ -21,49 +20,44 @@ void Simulator::step(uint64_t cycles) {
     }
 }
 
-void Simulator::check_bus() {
-    c->io_iRead_data_valid = 0;
-    c->io_dRead_data_valid = 0;
+void Simulator::check_bus(uint8_t iREn, long long iRAddr, long long iRSize, long long* iRdata, uint8_t* iRValid, uint8_t dREn, long long dRAddr, long long dRSize, long long* dRdata, uint8_t* dRValid, long long dWAddr, long long dWdata, long long dWSize, uint8_t dWEn) {
+    *iRValid = 0;
+    *dRValid = 0;
 
-    if (c->io_iRead_addressInfo_valid == 1) {
-        //printf("Reading %016lx <- %016llx\n", c->io_iRead_addressInfo_bits_address,
-        //       memory.read(c->io_iRead_addressInfo_bits_address, sz_double));
-        c->io_iRead_data_valid = 1;
-        c->io_iRead_data_bits = memory.read(c->io_iRead_addressInfo_bits_address, sz_double);
+    if (iREn == 1) {
+        printf("Reading %016lx <- %016llx\n", iRAddr,
+               memory.read(iRAddr, sz_double));
+        *iRValid = 1;
+        *iRdata = memory.read(iRAddr, sz_double);
     }
 
-    if (c->io_dRead_addressInfo_valid == 1) {
-        c->io_dRead_data_valid = 1;
-        c->io_dRead_data_bits = memory.read(c->io_dRead_addressInfo_bits_address,
-                                            c->io_dRead_addressInfo_bits_size);
+    if (dREn == 1) {
+        *dRValid = 1;
+        *dRdata = memory.read(dRAddr, dRSize);
     }
 
-    if (c->io_dWrite_storeInfo_valid == 1) {
-        //printf("Write: %lx %d %lx\n", c->io_dWrite_storeInfo_bits_addressInfo_address,
-        //       c->io_dRead_addressInfo_bits_size,
-        //       c->io_dWrite_storeInfo_bits_data);
-        if ((c->io_dWrite_storeInfo_bits_addressInfo_address & 0xFFFFFFFFLL) == 0xFFFF0000LL) {
-            printf("%c", (char)c->io_dWrite_storeInfo_bits_data);
-        } else if ((c->io_dWrite_storeInfo_bits_addressInfo_address & 0xFFFFFFFFLL) == 0xFFFF0010LL) {
-            if (c->io_dWrite_storeInfo_bits_data != 0) {
-                printf("Test failed with error %lu.\n", c->io_dWrite_storeInfo_bits_data);
+    if (dWEn == 1) {
+        printf("Write: %lx %d %lx\n", dWAddr,
+               dWSize,
+               dWdata);
+        if ((dWAddr & 0xFFFFFFFFLL) == 0xFFFF0000LL) {
+            printf("%c", (char)dWdata);
+        } else if ((dWAddr & 0xFFFFFFFFLL) == 0xFFFF0010LL) {
+            if (dWdata != 0) {
+                printf("Test failed with error %lu.\n", dWdata);
             } else {
                 puts("Test passed.");
             }
 
             halt = true;
         } else {
-            memory.write(c->io_dWrite_storeInfo_bits_addressInfo_address,
-                         c->io_dRead_addressInfo_bits_size,
-                         c->io_dWrite_storeInfo_bits_data);
+            memory.write(dWAddr,
+                         dWSize,
+                         dWdata);
         }
     }
 }
 
 void Simulator::bus_init(const char *elf_path) {
-    c->io_iRead_addressInfo_ready = 1;
-    c->io_dRead_addressInfo_ready = 1;
-    c->io_dWrite_storeInfo_ready = 1;
-
     memory.init(elf_path);
 }

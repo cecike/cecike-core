@@ -40,7 +40,6 @@ class NaiveIssueQueue(fuNum: Int, depth: Int) extends IssueQueue(fuNum, depth) {
       (p.bits.fuType & io.fuTypes(i)).orR()
     }.reverse)
   }
-  val valid = io.microOpIn.fire()
 
   val entryEmpty = MultiBinaryPriorityEncoder(entryEmptyOH, decodeWidth)
   val entryReady = MultiBinaryPriorityEncoder(entryReadyOH, entryMaskOH, fuNum)
@@ -56,7 +55,7 @@ class NaiveIssueQueue(fuNum: Int, depth: Int) extends IssueQueue(fuNum, depth) {
 
     when (io.flush || reset.asBool()) {
       microOpOutReg(i).valid := false.B
-    } otherwise when ((io.microOpOut(i).fire() || !io.microOpOut(i).valid)) {
+    } otherwise when (io.microOpOut(i).fire() || !io.microOpOut(i).valid) {
       microOpOutReg(i).valid := entry.valid
       microOpOutReg(i).bits := queueEntries(entry.bits).bits
 
@@ -71,12 +70,15 @@ class NaiveIssueQueue(fuNum: Int, depth: Int) extends IssueQueue(fuNum, depth) {
 
   for (i <- 0 until decodeWidth) {
     val entry = entryEmpty._1(i)
-    queueEntries(entry.bits).bits := io.microOpIn.bits(i).bits
-    queueEntries(entry.bits).valid := io.microOpIn.fire() &&
+    def opValid = io.microOpIn.fire() &&
       io.microOpIn.bits(i).valid && entry.valid
-    log(io.microOpIn.fire() &&
-      io.microOpIn.bits(i).valid && entry.valid, "Write new mOp %x to %x",
-      io.microOpIn.bits(i).bits.pc, entry.bits)
+
+    when (opValid) {
+      queueEntries(entry.bits).bits := io.microOpIn.bits(i).bits
+      queueEntries(entry.bits).valid := true.B
+      log("Write new mOp %x to %x",
+        io.microOpIn.bits(i).bits.pc, entry.bits)
+    }
   }
 
   for (i <- 0 until fuNum) {

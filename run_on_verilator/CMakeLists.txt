@@ -15,4 +15,4 @@ set(SOURCE_FILES    main.cpp
 
 add_executable(SimCore ${SOURCE_FILES})
 verilate(SimCore
-        SOURCES "../SimpleSimCore.v")
+        SOURCES "../SimpleSimCore.v" "SimRAM.v")

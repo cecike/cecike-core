@@ -10,17 +10,26 @@ import chisel3._
 import chisel3.stage.ChiselGeneratorAnnotation
 import chisel3.util._
 
-class SimCoreIO extends Bundle {
+class SimRAMIO extends Bundle {
+  val clk = Input(Clock())
+  val mem = Flipped(new SimCoreInnerIO)
+}
+
+class SimRAM extends BlackBox {
+  val io = IO(new SimRAMIO)
+}
+
+class SimCoreInnerIO extends Bundle {
   val iRead = new MemoryReadPort
   val dRead = new MemoryReadPort
   val dWrite = new MemoryWritePort
 }
 
-class SimCore extends CecikeModule {
-  val io = IO(new SimCoreIO)
+class SimCoreInner extends CecikeModule {
+  val io = IO(new SimCoreInnerIO)
 }
 
-class SimpleSimCore extends SimCore {
+class SimpleSimCoreInner extends SimCoreInner {
   val frontend = Module(new Frontend)
   val backend = Module(new Backend)
   val dummyTLB = Module(new TranslationLookasideBuffer)
@@ -45,6 +54,15 @@ class SimpleSimCore extends SimCore {
   backend.io.tlbQuery <> dummyTLB.io.query
 
   backend.io.debug.register.addr := 0.U
+}
+
+class SimpleSimCore extends CecikeModule {
+  val io = IO(new Bundle() {})
+  val core = Module(new SimpleSimCoreInner)
+  val mem = Module(new SimRAM)
+
+  mem.io.clk := clock
+  mem.io.mem <> core.io
 }
 
 object SimpleSimCore {
