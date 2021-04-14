@@ -29,8 +29,10 @@ class Frontend extends CecikeModule {
   val stagedPC = Reg(UInt(xLen.W))
   val stagedBackendPC = Reg(UInt(xLen.W))
   val stagedBackendPCValid = RegInit(false.B)
-  val stagedInstruction = Reg(Valid(Vec(decodeWidth, new InstructionBundle)))
+  val stagedInstruction = Reg(Vec(decodeWidth, UInt(xLen.W)))
   val stagedInstructionValid = RegInit(false.B)
+
+  val notStageBackend = WireDefault(false.B)
 
   val s_idle :: s_wait :: s_wait_kill :: s_wait_send :: Nil = Enum(4)
   val state = RegInit(s_idle)
@@ -41,8 +43,8 @@ class Frontend extends CecikeModule {
     a(xLen - 1, cacheLineAddressWidth) === b(xLen - 1, cacheLineAddressWidth)
   }
 
-  def instructionBundle(i: Int) = {
-      val instruction = io.memoryRead.data.bits(i)
+  def instructionBundle(i: Int, source: Vec[UInt]) = {
+      val instruction = source(i)
       val bundle = Wire(new InstructionBundle)
       val pc: UInt = stagedPC + (i.U << 2.U)
       bundle.pc := pc
@@ -68,7 +70,18 @@ class Frontend extends CecikeModule {
   io.memoryRead.addressInfo.bits.address := 0.U
   io.memoryRead.addressInfo.bits.compact := false.B
   io.instruction.valid := false.B
-  io.instruction.bits := DontCare
+  for (i <- 0 until decodeWidth) {
+    io.instruction.bits(i) := instructionBundle(i, io.memoryRead.data.bits)
+  }
+
+  when (io.backendPC.valid && !notStageBackend) {
+    stagedBackendPCValid := true.B
+    stagedBackendPC := io.backendPC.bits
+  }
+
+  when (io.memoryRead.data.valid) {
+    stagedInstruction := io.memoryRead.data.bits
+  }
 
   switch(state) {
     is(s_idle) {
@@ -77,31 +90,19 @@ class Frontend extends CecikeModule {
     }
 
     is(s_wait) {
-      when (io.memoryRead.data.valid && io.backendPC.valid) {
-        //log("1")
-        issueNewReq()
-        nextState := s_wait
-      } .elsewhen(io.memoryRead.data.valid) {
-        //log("2")
+      val memOk = io.memoryRead.data.valid
+      when (io.backendPC.valid) {
+        nextState := Mux(memOk, s_idle, s_wait_kill)
+      } .elsewhen(memOk) {
         io.instruction.valid := true.B
-        io.instruction.bits := (0 until decodeWidth).map(instructionBundle)
-        when (io.instruction.fire()) {
+        when (io.instruction.ready) {
           issueNewReq()
           nextState := s_wait
         } otherwise {
-          //log("3")
-          stagedInstruction.valid := true.B
-          stagedInstruction.bits := (0 until decodeWidth).map(instructionBundle)
+          stagedInstructionValid := true.B
           nextState := s_wait_send
         }
-      } .elsewhen(io.backendPC.valid) {
-        //log("4")
-        keepReq()
-        stagedBackendPCValid := true.B
-        stagedBackendPC := io.backendPC.bits
-        nextState := s_wait_kill
       } .otherwise {
-        //log("5")
         keepReq()
         nextState := s_wait
       }
@@ -122,9 +123,9 @@ class Frontend extends CecikeModule {
         nextState := s_wait
       } otherwise {
         io.instruction.valid := true.B
-        io.instruction.bits := stagedInstruction.bits
+        io.instruction.bits := (0 until decodeWidth).map(instructionBundle(_, stagedInstruction))
         when (io.instruction.fire()) {
-          stagedInstruction.valid := false.B
+          stagedInstructionValid := false.B
           issueNewReq()
           nextState := s_wait
         } otherwise {
@@ -144,6 +145,7 @@ class Frontend extends CecikeModule {
 
     pc := wrappedNext(realPC)
     stagedPC := realPC
+    notStageBackend := true.B
     stagedBackendPCValid := false.B
   }
 
@@ -154,6 +156,7 @@ class Frontend extends CecikeModule {
   }
 
   log(io.memoryRead.data.valid, "Got data for %x", stagedPC)
+  log(io.memoryRead.data.valid, p"${io.memoryRead.data.bits}")
   log(p"$state $nextState")
   log(io.instruction.fire(), "Instruction at %x fired %x - %b %x - %b",
     io.instruction.bits(0).pc,

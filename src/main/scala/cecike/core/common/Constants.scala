@@ -4,7 +4,7 @@ import chisel3._
 import chisel3.util._
 
 object Constants {
-  val hasLog = false.B
+  val hasLog = true.B
 
   val xLen = 64 // From RISC-V Spec
   val wLen = 32

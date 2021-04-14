@@ -99,7 +99,7 @@ class ReorderBuffer extends CecikeModule {
     flushMask(i) := flushMask(i - 1) ||
       ((currentEntry().microOp(i).needFlush() || incomeFlush(i)) && previousMicroOpDone(i))
   }
-  val needFlush = flushMask(decodeWidth - 1)
+  val needFlush = nonEmpty(flushMask(decodeWidth - 1), false.B)
   io.flush := needFlush
   bufferManager.io.clear := needFlush
 
@@ -107,7 +107,7 @@ class ReorderBuffer extends CecikeModule {
   val flushMaskCat = Cat(flushMask.reverse)
   val flushEntryIndex = BinaryPriorityEncoder(flushMaskCat)
   val flushEntry = currentEntry().microOp(flushEntryIndex.bits)
-  io.pc.valid := flushEntryIndex.valid
+  io.pc.valid := nonEmpty(flushEntryIndex.valid, false.B)
   io.pc.bits := Mux(incomeFlush(flushEntryIndex.bits),
     io.branchInfo.dest, Mux(
     flushEntry.branchInfo.taken,
