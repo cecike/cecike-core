@@ -16,7 +16,7 @@ int main(int argc, char **argv) {
         printf("Loading elf %s to memory ...\n", argv[1]);
     }
     s.bus_init(argv[1]);
-    s.reset(10);
+    s.reset();
     s.step(680);
     return 0;
 }

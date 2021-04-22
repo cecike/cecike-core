@@ -1,23 +1,31 @@
 #include "simulator.h"
 
-void Simulator::reset(uint64_t cycles) {
+void Simulator::reset() {
     c->reset = 1;
-    step(cycles);
+    step(1);
     c->reset = 0;
 }
 
 void Simulator::step(uint64_t cycles) {
-    for (uint64_t i = 0; i < cycles; i ++) {
-        printf("Step %llu --\n", i);
-        c->clock = 1;
-        c->eval();
-        c->clock = 0;
+    cycle = 0;
+    for (uint64_t i = 0; i < cycles * 10; i ++) {
+        if ((i % 10) == 1) {
+            cycle += 1;
+            printf("Step %llu --\n", cycle);
+            c->clock = 1;
+        }
+
+        if ((i % 10) == 6) {
+            c->clock = 0;
+        }
+
         c->eval();
 
-        if (halt) {
+        if ((i % 10) == 9 && halt) {
             return;
         }
     }
+    return;
 }
 
 void Simulator::check_bus(uint8_t iREn, long long iRAddr, long long iRSize, long long* iRdata, uint8_t* iRValid, uint8_t dREn, long long dRAddr, long long dRSize, long long* dRdata, uint8_t* dRValid, long long dWAddr, long long dWdata, long long dWSize, uint8_t dWEn) {

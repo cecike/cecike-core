@@ -7,10 +7,10 @@
 
 class Simulator {
 public:
-    Simulator() : cycle(0), halt(false), has_error(false), c(new VSimpleSimCore) {
+    Simulator() : cycle(0), halt(false), c(new VSimpleSimCore) {
     }
 
-    void reset(uint64_t cycles = 1);
+    void reset();
 
     void step(uint64_t cycles = 1);
 
@@ -23,7 +23,6 @@ private:
     uint64_t cycle;
     SimMemory memory;
     bool halt;
-    bool has_error;
 };
 
 
