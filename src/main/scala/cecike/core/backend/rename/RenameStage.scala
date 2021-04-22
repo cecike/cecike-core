@@ -104,7 +104,9 @@ class RenameStage extends CecikeModule {
     stage1MicroOp(i).physicalRs1 := physicalRs1(i)
     stage1MicroOp(i).physicalRs2 := physicalRs2(i)
     stage1MicroOp(i).oldPhysicalRd := physicalRd(i)
-    stage1MicroOp(i).physicalRd := Mux(io.microOpIn.bits(i).rdValid(), freeListResult(i), 0.U)
+    stage1MicroOp(i).physicalRd := Mux(
+      io.microOpIn.bits(i).rdValid() && io.microOpIn.bits(i).rd().orR(),
+      freeListResult(i), 0.U)
     stage1MicroOp(i).orderInfo := orderInfo(i)
   }
 
@@ -136,10 +138,14 @@ class RenameStage extends CecikeModule {
   busyTable.io.flush := io.flush
 
   // Physical rs, rd of input
-  val stage2PhysicalRs1 = microOpReg.map(_.physicalRs1)
-  val stage2PhysicalRs2 = microOpReg.map(_.physicalRs2)
-  val stage2PhysicalRd = microOpReg.map(_.physicalRd)
-  val stage2RdValid = stage2PhysicalRd.map(_.orR && outputValid)
+  def stage2PhysicalRs1 = microOpReg.map(_.physicalRs1)
+  def stage2PhysicalRs2 = microOpReg.map(_.physicalRs2)
+  def stage2PhysicalRd = microOpReg.map(_.physicalRd)
+  def stage2RdValid = stage2PhysicalRd.map(_.orR && outputValid)
+
+  log("Set busy: %d -> %d %d -> %d",
+    stage2RdValid(0), stage2PhysicalRd(0),
+    stage2RdValid(1), stage2PhysicalRd(1))
 
   // Connect to submodules
   for (i <- 0 until decodeWidth) {
@@ -150,8 +156,8 @@ class RenameStage extends CecikeModule {
   }
 
   // Extract busy info
-  val rs1Busy = busyTable.io.rs1ReadPort.map(_.busy)
-  val rs2Busy = busyTable.io.rs2ReadPort.map(_.busy)
+  def rs1Busy = busyTable.io.rs1ReadPort.map(_.busy)
+  def rs2Busy = busyTable.io.rs2ReadPort.map(_.busy)
 
   // Write our results
   for (i <- 0 until decodeWidth) {

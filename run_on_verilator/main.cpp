@@ -17,6 +17,6 @@ int main(int argc, char **argv) {
     }
     s.bus_init(argv[1]);
     s.reset();
-    s.step(680);
+    s.step(637);
     return 0;
 }

@@ -29,9 +29,9 @@ class BusyTable extends CecikeModule {
     .map(p => Mux(p.valid, UIntToOH(p.bits, physicalRegisterNum), 0.U))
     .reduce(_|_)
 
-  val backendWriteMask = (~io.backendWritePort
+  val backendWriteMask = (~(io.backendWritePort
     .map(p => Mux(p.valid, UIntToOH(p.bits, physicalRegisterNum), 0.U))
-    .reduce(_|_)).asUInt
+    .reduce(_|_))).asUInt
   val commonMask = (~(1.U(physicalRegisterNum.W))).asUInt
 
   val busyTableWithBackendFeedback = busyTable & backendWriteMask & commonMask
@@ -46,5 +46,5 @@ class BusyTable extends CecikeModule {
 
   log("Table: %x", busyTable)
   log(rdWriteMask.orR(), "Set mask: %x", rdWriteMask)
-  log(!backendWriteMask.andR(), "Free mask: %x", backendWriteMask)
+  log(!backendWriteMask.andR(), "Free mask: %x", ~backendWriteMask)
 }
