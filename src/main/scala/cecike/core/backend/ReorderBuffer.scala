@@ -135,6 +135,15 @@ class ReorderBuffer extends CecikeModule {
       !mop.done && mop.isStoreOp &&
       !flushMask(i) && previousMicroOpDone(i)
   }
+
+  def previousFlushMask(i: Int): Bool = {
+    if (i == 0) {
+      false.B
+    } else {
+      flushMask(i - 1)
+    }
+  }
+
   io.storeCommit := (0 until decodeWidth).map(storeCommitValid).reduce(_||_)
 
   // Store branch info
@@ -175,7 +184,7 @@ class ReorderBuffer extends CecikeModule {
   // Deallocate free list
   for (i <- 0 until decodeWidth) {
     val valid = commit && currentEntry().microOp(i).rdValid
-    val data = Mux(flushMask(i), 0.U, UIntToOH(currentEntry().microOp(i).oldPhysicalRd)) |
+    val data = Mux(previousFlushMask(i), 0.U, UIntToOH(currentEntry().microOp(i).oldPhysicalRd)) |
       Mux(!currentEntry().microOp(i).orderInfo.validWithMask((~Cat(flushMask.reverse)).asUInt, i),
         UIntToOH(currentEntry().microOp(i).physicalRd), 0.U)
     io.freelistCommitDeallocateReqPort(i) := Mux(valid, data, 0.U)
@@ -184,7 +193,7 @@ class ReorderBuffer extends CecikeModule {
   // Commit to map table
   for (i <- 0 until decodeWidth) {
     io.mapTableRdCommit(i).valid := commit &&
-      !flushMask(i) &&
+      !previousFlushMask(i) &&
       currentEntry().microOp(i).rdValid &&
       currentEntry().microOp(i).orderInfo.validWithMask((~Cat(flushMask.reverse)).asUInt, i)
     io.mapTableRdCommit(i).logicalAddr := currentEntry().microOp(i).logicalRd

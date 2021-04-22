@@ -42,6 +42,7 @@ class RawBRU extends CecikeModule {
   val pcValidTable = Array(
     op(BRUOp.BX) -> false.B,
     op(BRUOp.J) -> true.B,
+    op(BRUOp.JR) -> true.B,
     op(BRUOp.EQ) -> eq,
     op(BRUOp.NE) -> ne,
     op(BRUOp.LT) -> lt,
