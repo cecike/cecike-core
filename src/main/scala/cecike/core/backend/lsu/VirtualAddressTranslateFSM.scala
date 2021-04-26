@@ -18,6 +18,7 @@ class VirtualAddressTranslateFSMIO extends Bundle {
   val agu = DeqIO(new AGUInfo)
   val flush = Input(Bool())
   val tlb = new TLBQueryPort
+  val storeAddressCollision = Input(Bool())
   val res = EnqIO(new LSUEntry)
   val debug = Output(new VirtualAddressTranslateFSMDebugIO)
 }
@@ -42,6 +43,7 @@ class VirtualAddressTranslateFSM extends CecikeModule {
   val nextState = WireDefault(s_idle)
   val eatNewAGU = WireDefault(false.B)
   val storeAddress = WireDefault(false.B)
+  io.agu.ready := false.B
 
   switch(state) {
     is(s_idle) {
@@ -54,6 +56,10 @@ class VirtualAddressTranslateFSM extends CecikeModule {
     is(s_shake) {
       io.tlb.virtualAddress.valid := !io.flush
       io.tlb.virtualAddress.bits := lsuEntry.aguInfo.address.address
+
+      log("Shake %x of %x",
+        lsuEntry.aguInfo.address.address,
+        lsuEntry.aguInfo.opInfo.pc)
 
       when (io.tlb.virtualAddress.fire()) {
         setStateWhenWait()
@@ -85,16 +91,24 @@ class VirtualAddressTranslateFSM extends CecikeModule {
   state := nextState
 
   def eat() = {
+    log("Take new agu info of %x", io.agu.bits.opInfo.pc)
     eatNewAGU := !io.flush
+    io.agu.ready := !io.flush
   }
 
   def setStateWhenSend() = {
-    io.res.valid := !io.flush
+    io.res.valid := !io.flush && (lsuEntry.aguInfo.load || !io.storeAddressCollision)
+    log(p"${lsuEntry.aguInfo.load} ${io.storeAddressCollision}")
+
+    log("Send %x of %x",
+      lsuEntry.aguInfo.address.address,
+      lsuEntry.aguInfo.opInfo.pc)
 
     when (io.flush) {
       nextState := s_idle
     } otherwise {
       when (io.res.fire()) {
+        log("Send ok")
         eat()
         when (io.agu.valid) {
           nextState := s_shake
@@ -119,8 +133,6 @@ class VirtualAddressTranslateFSM extends CecikeModule {
       }
     }
   }
-
-  io.agu.ready := eatNewAGU
 
   when (io.agu.fire) {
     lsuEntry.aguInfo := io.agu.bits

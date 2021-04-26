@@ -10,6 +10,8 @@ import cecike.utils._
 class MemoryFunctionUnit extends FunctionUnit(false, false, false, true) {
   val microOpIn = io.microOpIn
 
+  io.microOpIn.ready := false.B
+
   io.fuType := FunctionUnitType.fuTypeCode(hasLSU = true)
   // Stage 1 - read register and select src
   io.rsRead(0).addr := io.microOpIn.bits.rs1Info.addr
@@ -24,6 +26,7 @@ class MemoryFunctionUnit extends FunctionUnit(false, false, false, true) {
     stage2MicroOp.valid := false.B
   } otherwise {
     when (!io.loadStoreInfo.aguInfo.valid || io.loadStoreInfo.aguInfo.ready) {
+      io.microOpIn.ready := true.B
       stage2MicroOp := microOpIn
       rs1 := io.rsRead(0).data
       rs2 := io.rsRead(1).data
@@ -50,9 +53,9 @@ class MemoryFunctionUnit extends FunctionUnit(false, false, false, true) {
 
   aguInfo.bits.opInfo := OpInfo(stage2MicroOp.bits)
 
-  io.microOpIn.ready := aguInfo.ready
-
   io.readyRd := io.loadStoreInfo.readyRd
   io.readyROB := io.loadStoreInfo.readyROB
   io.rdWrite := io.loadStoreInfo.rdWrite
+  log("%d %x %x %x %x", stage2MicroOp.valid, stage2MicroOp.bits.pc, rs1,
+    stage2MicroOp.bits.immediate, address)
 }

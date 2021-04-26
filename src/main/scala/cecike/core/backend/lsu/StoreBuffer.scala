@@ -13,6 +13,7 @@ import cecike.utils.RingBufferManager
 class StoreBufferEntry extends Bundle {
   val valid = Bool()
   val commit = Bool()
+  val pc = UInt(xLen.W)
   val info = new StoreInfo
   val robIndex = UInt(robAddressWidth.W)
 }
@@ -55,7 +56,7 @@ class StoreBuffer extends CecikeModule {
 
   io.existencePort.exist := buffer.map { p =>
     (p.valid || p.commit) &&
-      p.info.addressInfo.address(xLen - 1, 3) === io.existencePort.address(xLen - 1, 3)
+      AddressCollision(p.info.addressInfo.address, io.existencePort.address)
   }.reduce(_||_)
 
   io.lsuEntry.ready := !full && !io.flush
@@ -67,10 +68,14 @@ class StoreBuffer extends CecikeModule {
     when (io.lsuEntry.fire()) {
       val bufferTail = buffer(tail)
       bufferTail.valid := true.B
+      bufferTail.pc := io.lsuEntry.bits.aguInfo.opInfo.pc
       bufferTail.info.addressInfo := io.lsuEntry.bits.aguInfo.address
       bufferTail.info.data := io.lsuEntry.bits.aguInfo.data
       bufferTail.robIndex := io.lsuEntry.bits.aguInfo.opInfo.robIndex
       tail := tail + 1.U
+      log("Push %x to %d by %x",
+        io.lsuEntry.bits.aguInfo.address.address,
+        tail, io.lsuEntry.bits.aguInfo.opInfo.pc)
     }
   }
 
@@ -80,6 +85,9 @@ class StoreBuffer extends CecikeModule {
     buffer(commit).commit := true.B
     commit := commit + 1.U
     io.readyROB.valid := true.B
+    log("Commit %x at %d of %x",
+      buffer(commit).info.addressInfo.address,
+      commit, buffer(commit).pc)
   }
 
   io.storeInfo.valid := !nothingToWrite
@@ -89,7 +97,12 @@ class StoreBuffer extends CecikeModule {
     buffer(head).valid := false.B
     buffer(head).commit := false.B
     head := head + 1.U
+    log("Pop %x at %d of %x", buffer(head).info.addressInfo.address,
+      head, buffer(head).pc)
   }
 
-  log(p"Head $head Commit $commit Tail $tail")
+  log("Head %d -  %x Commit %d - %x Tail %d - %x",
+    head, buffer(head).info.addressInfo.address,
+    commit, buffer(commit).info.addressInfo.address,
+    tail, buffer(tail).info.addressInfo.address)
 }

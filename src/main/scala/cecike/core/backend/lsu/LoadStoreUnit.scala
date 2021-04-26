@@ -53,6 +53,7 @@ class LoadStoreUnit extends CecikeModule {
   loadFromMemoryFSM.io.lsuEntry.bits := addressTranslateFSM.io.res.bits
   storeBuffer.io.lsuEntry.bits := addressTranslateFSM.io.res.bits
 
+  addressTranslateFSM.io.res.ready := false.B
   loadFromMemoryFSM.io.lsuEntry.valid := false.B
   storeBuffer.io.lsuEntry.valid := false.B
   when (addressTranslateFSM.io.res.bits.aguInfo.load) {
@@ -62,6 +63,9 @@ class LoadStoreUnit extends CecikeModule {
     storeBuffer.io.lsuEntry.valid := addressTranslateFSM.io.res.valid
     addressTranslateFSM.io.res.ready := storeBuffer.io.lsuEntry.ready
   }
+
+  loadFromMemoryFSM.io.storeAddress := addressTranslateFSM.io.res.bits.aguInfo.address.address
+  addressTranslateFSM.io.storeAddressCollision := loadFromMemoryFSM.io.storeAddressCollision
 
   storeBuffer.io.ableToCommit := !loadFromMemoryFSM.io.readyROB.valid
   storeBuffer.io.storeCommit := io.storeCommit

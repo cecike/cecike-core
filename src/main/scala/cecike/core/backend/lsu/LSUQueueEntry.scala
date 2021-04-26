@@ -49,7 +49,7 @@ class LSUEntry extends Bundle {
 }
 
 object MemoryDataExtension {
-  def apply(data: UInt, fuOp: UInt) : UInt = {
+  def apply(data: UInt, fuOp: UInt): UInt = {
     require(data.getWidth == xLen)
     val resultTable = Array(
       LSUOp.LB -> SignExtension(data(7, 0)),
@@ -57,5 +57,11 @@ object MemoryDataExtension {
       LSUOp.LW -> SignExtension(data(31, 0))
     )
     MuxLookup(fuOp, data, resultTable)
+  }
+}
+
+object AddressCollision {
+  def apply(a: UInt, b: UInt): Bool = {
+    a(xLen - 1, 3) === b(xLen - 1, 3)
   }
 }

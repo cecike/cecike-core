@@ -220,5 +220,5 @@ class ReorderBuffer extends CecikeModule {
   io.debug.commitReady := currentEntryReady
   io.debug.commitDone := currentEntryDone
 
-  log(p"Head: $bufferHead Tail: $bufferTail")
+  log("Head: %d %x Tail: %d", bufferHead, currentEntry().pc(),bufferTail)
 }

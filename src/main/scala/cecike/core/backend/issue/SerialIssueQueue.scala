@@ -49,7 +49,7 @@ class SerialIssueQueue(depth: Int) extends IssueQueue(1, depth) {
   when (io.flush || (io.microOpOut(0).fire && !readyToIssue)) {
     stagedOutputEntryValid := false.B
   } otherwise when((!stagedOutputEntryValid || io.microOpOut(0).fire) && readyToIssue) {
-    log("Select entry %d to fire", queueManager.io.head)
+    log("Select entry %d of %x to fire", queueManager.io.head, outputEntry.bits.pc)
     stagedOutputEntry := outputEntry
     stagedOutputEntryValid := true.B
     queueManager.io.deallocate(0) := true.B

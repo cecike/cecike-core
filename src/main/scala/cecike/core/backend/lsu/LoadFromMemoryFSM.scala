@@ -15,6 +15,9 @@ class LoadFromMemoryFSMIO extends Bundle {
   val storeBuffer = new StoreBufferCheckExistencePort
   val memoryRead = new MemoryReadPort
 
+  val storeAddress = Input(UInt(xLen.W))
+  val storeAddressCollision = Output(Bool())
+
   val readyROB = Valid(UInt(robAddressWidth.W))
   val readyRd = Valid(UInt(physicalRegisterAddressWidth.W))
   val rdWrite = Flipped(new RegisterFileWritePort)
@@ -49,6 +52,9 @@ class LoadFromMemoryFSM extends CecikeModule {
   val s_idle :: s_shake :: s_wait :: s_flush :: Nil = Enum(4)
 
   val state = RegInit(s_idle)
+
+  io.storeAddressCollision := (state === s_wait || state === s_shake) &&
+    AddressCollision(io.storeAddress, lsuEntry.aguInfo.address.address)
 
   val nextState = WireDefault(s_idle)
 
