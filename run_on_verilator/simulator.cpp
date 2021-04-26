@@ -33,13 +33,15 @@ void Simulator::check_bus(uint8_t iREn, long long iRAddr, long long iRSize, long
     *dRValid = 0;
 
     if (iREn == 1) {
-        printf("Reading %016lx <- %016llx\n", iRAddr,
+        printf("Reading %016lx <- %016llx (i)\n", iRAddr,
                memory.read(iRAddr, sz_double));
         *iRValid = 1;
         *iRdata = memory.read(iRAddr, sz_double);
     }
 
     if (dREn == 1) {
+        printf("Reading %016lx <- %016llx (d)\n", dRAddr,
+                       memory.read(dRAddr, dRSize));
         *dRValid = 1;
         *dRdata = memory.read(dRAddr, dRSize);
     }

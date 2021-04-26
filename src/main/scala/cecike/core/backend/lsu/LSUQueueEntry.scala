@@ -3,13 +3,14 @@ package cecike.core.backend.lsu
 import chisel3._
 import chisel3.util._
 import cecike.core.common.Constants._
-import cecike.core.common._
+import cecike.core.common.{Constants, _}
 import cecike.utils._
 
 class OpInfo extends Bundle {
   val pc = UInt(xLen.W)
   val rdInfo = UndirectionalValid(UInt(physicalRegisterAddressWidth.W))
   val robIndex = UInt(robAddressWidth.W)
+  val fuOp = UInt(functionUnitOpWidth.W)
 }
 
 object OpInfo {
@@ -19,6 +20,7 @@ object OpInfo {
     opInfo.pc := microOpIn.pc
     opInfo.rdInfo := microOpIn.rdInfo
     opInfo.robIndex := microOpIn.robIndex
+    opInfo.fuOp := microOpIn.fuOp
 
     opInfo
   }
@@ -44,4 +46,16 @@ class Status extends Bundle {
 class LSUEntry extends Bundle {
   val aguInfo = new AGUInfo
   val status = new Status
+}
+
+object MemoryDataExtension {
+  def apply(data: UInt, fuOp: UInt) : UInt = {
+    require(data.getWidth == xLen)
+    val resultTable = Array(
+      LSUOp.LB -> SignExtension(data(7, 0)),
+      LSUOp.LH -> SignExtension(data(15, 0)),
+      LSUOp.LW -> SignExtension(data(31, 0))
+    )
+    MuxLookup(fuOp, data, resultTable)
+  }
 }

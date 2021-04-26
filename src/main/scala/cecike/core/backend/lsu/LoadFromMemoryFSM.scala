@@ -54,13 +54,7 @@ class LoadFromMemoryFSM extends CecikeModule {
 
   switch(state) {
     is (s_idle) {
-      eat()
-      when (io.lsuEntry.fire()) {
-        log("Fire")
-        lsuEntry := io.lsuEntry.bits
-        shakeFromInput()
-        shakeNextState()
-      }
+      idleNextState()
     }
 
     is (s_shake) {
@@ -79,15 +73,15 @@ class LoadFromMemoryFSM extends CecikeModule {
 
         io.rdWrite.valid := true.B
         io.rdWrite.addr := lsuEntry.aguInfo.opInfo.rdInfo.bits
-        io.rdWrite.data := io.memoryRead.data.bits
+        io.rdWrite.data := MemoryDataExtension(io.memoryRead.data.bits,
+          lsuEntry.aguInfo.opInfo.fuOp)
 
-        eat()
-        when (io.lsuEntry.fire()) {
-          shakeFromInput()
-          shakeNextState()
-        } otherwise {
-          nextState := s_idle
-        }
+        log("%x %x %x", lsuEntry.aguInfo.opInfo.pc,
+          lsuEntry.aguInfo.address.address,
+          MemoryDataExtension(io.memoryRead.data.bits,
+            lsuEntry.aguInfo.opInfo.fuOp))
+
+        idleNextState()
       } otherwise {
         when (io.flush) {
           nextState := s_flush
@@ -125,6 +119,18 @@ class LoadFromMemoryFSM extends CecikeModule {
     io.memoryRead.addressInfo.valid := !io.storeBuffer.exist && !io.flush
     io.memoryRead.addressInfo.bits := lsuEntry.aguInfo.address
     io.storeBuffer.address := lsuEntry.aguInfo.address.address
+  }
+
+  def idleNextState(): Unit = {
+    eat()
+    when (io.lsuEntry.fire()) {
+      log("Fire")
+      lsuEntry := io.lsuEntry.bits
+      shakeFromInput()
+      shakeNextState()
+    } otherwise {
+      nextState := s_idle
+    }
   }
 
   def shakeNextState(): Unit = {
