@@ -39,9 +39,9 @@ class RawALU extends CecikeModule {
     op(ALUOp.AUIPC) -> (io.pc + src2),
     op(ALUOp.ADDW) -> SignExtension(src1W + src2W),
     op(ALUOp.SUBW) -> SignExtension(src1W - src2W),
-    op(ALUOp.SLLW) -> SignExtension((src1 << src2(4, 0))(wLen - 1, 0)),
-    op(ALUOp.SRLW) -> SignExtension((src1 >> src2(4, 0))(wLen - 1, 0)),
-    op(ALUOp.SRAW) -> SignExtension((src1.asSInt >> src2(4, 0))(wLen - 1, 0))
+    op(ALUOp.SLLW) -> SignExtension((src1W << src2(4, 0))(wLen - 1, 0)),
+    op(ALUOp.SRLW) -> SignExtension((src1W >> src2(4, 0))(wLen - 1, 0)),
+    op(ALUOp.SRAW) -> SignExtension((src1W.asSInt >> src2(4, 0))(wLen - 1, 0))
   )
 
   io.result := Mux1H(resultTable)
