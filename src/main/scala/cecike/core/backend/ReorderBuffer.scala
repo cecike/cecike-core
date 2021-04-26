@@ -103,7 +103,7 @@ class ReorderBuffer extends CecikeModule {
   val hasPendingFlush = hasPendingFlushMask.reduce(_||_) && !needFlush
 
 
-  val readyToCommit = (currentEntryDone | currentEntryReady).andR() && !hasPendingFlush
+  val readyToCommit = ((currentEntryDone | currentEntryReady).andR() || needFlush) && !hasPendingFlush
   val commit = nonEmpty(readyToCommit, false.B)
 
   bufferManager.io.deallocate(0) := commit
