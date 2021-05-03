@@ -49,6 +49,9 @@ object Constants {
   val pcInitLitValue = BigInt("80000000", 16)
   val pcInitValue = pcInitLitValue.U(xLen.W)
 
+  val hasBranchPredictor = false.B
+  val globalHistoryWidth = 9
+
   val verboseTest = true
 
   object TF {

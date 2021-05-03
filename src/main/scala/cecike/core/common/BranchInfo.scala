@@ -9,6 +9,7 @@ class BranchPredictionInfo extends Bundle {
 }
 
 class BranchInfo extends Bundle {
+  val pc = UInt(xLen.W)
   val valid = Bool()
   val robIndex = UInt(robAddressWidth.W)
   val taken = Bool()
