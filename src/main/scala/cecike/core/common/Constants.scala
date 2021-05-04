@@ -160,6 +160,30 @@ object Constants {
     }
   }
 
+  object MDUOp {
+    val mduOpWidth = 4
+
+    val MUL = op(0)
+    val MULH = op(1)
+    val MULHU = op(2)
+    val MULHSU = op(3)
+    val MULW = op(4)
+
+    val DIV = op(8)
+    val DIVU = op(9)
+    val REM = op(10)
+    val REMU = op(11)
+    val DIVW = op(12)
+    val DIVUW = op(13)
+    val REMW = op(14)
+    val REMUW = op(15)
+
+
+    def op(data: Int) = {
+      data.U(mduOpWidth.W)
+    }
+  }
+
   object LSUOp {
     val lsuWidth = 5
 
